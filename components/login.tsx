@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { loginUser, APIError } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 /* ─── SVG Icons ─── */
 function EyeOffIcon() {
@@ -46,10 +48,22 @@ function EyeIcon() {
   );
 }
 
+function SpinnerIcon() {
+  return (
+    <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.25" />
+      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const router = useRouter();
+  const { login } = useAuth();
 
   type FormData = {
     email: string;
@@ -63,9 +77,43 @@ export default function LoginForm() {
     formState: { errors },
   } = useForm<FormData>({ mode: "onTouched" });
 
-  const onSubmit = () => {
-    // TODO: integrate with authentication API
-    router.push("/");
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    setApiError(null);
+    try {
+      const res = await loginUser({
+        email: data.email,
+        password: data.password,
+      });
+      if (res.success && res.data) {
+        login(res.data);
+        router.push("/");
+      } else {
+        setApiError(res.message || "Login failed. Please try again.");
+      }
+    } catch (err) {
+      if (err instanceof APIError) {
+        if (err.details) {
+          if (Array.isArray(err.details) && err.details.length > 0) {
+            setApiError(err.details[0].message || err.message);
+          } else {
+            const fieldErrors = Object.values(err.details).flat();
+            if (fieldErrors.length > 0) {
+              const firstError = fieldErrors[0];
+              setApiError(typeof firstError === 'string' ? firstError : (firstError as any).message || err.message);
+            } else {
+              setApiError(err.message);
+            }
+          }
+        } else {
+          setApiError(err.message);
+        }
+      } else {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -112,6 +160,18 @@ export default function LoginForm() {
             Enter your credentials to access your dashboard and opportunities.
           </p>
 
+          {/* API Error */}
+          {apiError && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5 text-red-500">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              <span>{apiError}</span>
+            </div>
+          )}
+
           <form className="flex flex-col gap-[18px]" onSubmit={handleSubmit(onSubmit)}>
             {/* Email */}
             <div className="flex flex-col gap-1.5">
@@ -124,6 +184,7 @@ export default function LoginForm() {
                   type="email"
                   className={`w-full h-11 px-3.5 border rounded-lg text-sm text-gray-900 bg-white outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-[3px] ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500/[0.08]" : "border-gray-300 focus:border-[#2B7FE0] focus:ring-[#2B7FE0]/[0.08]"}`}
                   placeholder="jane@studio.com"
+                  disabled={isSubmitting}
                   {...register("email", {
                     required: "Email is required",
                     pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email address" },
@@ -152,6 +213,7 @@ export default function LoginForm() {
                   type={showPassword ? "text" : "password"}
                   className={`w-full h-11 px-3.5 pr-10 border rounded-lg text-sm text-gray-900 bg-white outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-[3px] ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500/[0.08]" : "border-gray-300 focus:border-[#2B7FE0] focus:ring-[#2B7FE0]/[0.08]"}`}
                   placeholder="••••••••"
+                  disabled={isSubmitting}
                   {...register("password", {
                     required: "Password is required",
                     minLength: { value: 8, message: "Password must be at least 8 characters" },
@@ -185,9 +247,17 @@ export default function LoginForm() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full h-12 border-none rounded-[10px] bg-[#2B7FE0] text-white text-[15px] font-semibold cursor-pointer flex items-center justify-center gap-2 mt-2.5 transition-all duration-200 hover:bg-[#2470c9] active:scale-[0.99] group"
+              disabled={isSubmitting}
+              className="w-full h-12 border-none rounded-[10px] bg-[#2B7FE0] text-white text-[15px] font-semibold cursor-pointer flex items-center justify-center gap-2 mt-2.5 transition-all duration-200 hover:bg-[#2470c9] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed group"
             >
-              Sign In
+              {isSubmitting ? (
+                <>
+                  <SpinnerIcon />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </button>
           </form>
 

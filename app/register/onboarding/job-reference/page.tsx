@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { updatePreferences, PreferencesUpsertRequest } from "@/lib/api";
 
 /* ─── Icons ─── */
 function GraduationCapIcon() {
@@ -59,6 +60,15 @@ function ChevronDownIcon() {
   );
 }
 
+function SpinnerIcon() {
+  return (
+    <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.25" />
+      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /* ─── Data ─── */
 const careerStages = [
   { id: "fresh", label: "Fresh Graduate", sub: "0-1 years exp", icon: "graduation" },
@@ -80,6 +90,8 @@ export default function JobReferencePage() {
   const [province, setProvince] = useState("Ontario");
   const [city, setCity] = useState("Toronto");
   const [selectedArrangements, setSelectedArrangements] = useState(["Hybrid", "Remote"]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const router = useRouter();
 
   const stageIcon = (type: string, isActive: boolean) => {
@@ -123,8 +135,31 @@ export default function JobReferencePage() {
   }
 
 
-  const HandleNextStep = () => {
-    router.push("/register/onboarding/verify-email");
+  const HandleNextStep = async () => {
+    setIsSubmitting(true);
+    setApiError(null);
+
+    try {
+      const payload: PreferencesUpsertRequest = {
+        careerStatus: selectedStage === "fresh" ? "FRESH_GRADUATE" : selectedStage === "early" ? "EARLY_CAREER" : "CAREER_SWITCHER",
+        jobSeekingStatus: selectedStatus === "Immediate Start" ? "IMMEDIATE" : selectedStatus === "Within 1 Month" ? "ONE_MONTH" : "THREE_MONTHS",
+        targetRoles: targetRoles,
+        locations: [{ province, city }],
+        workTypes: selectedArrangements.map((arr) => {
+          if (arr === "Hybrid") return "HYBRID";
+          if (arr === "Remote") return "REMOTE";
+          return "ONSITE";
+        }) as ("REMOTE" | "HYBRID" | "ONSITE")[],
+        emailNotificationsEnabled: true,
+      };
+
+      await updatePreferences(payload);
+      router.push("/register/onboarding/verify-email");
+    } catch (err: any) {
+      setApiError(err.message || "Failed to save preferences. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -152,6 +187,17 @@ export default function JobReferencePage() {
         <p className="text-sm text-gray-500 leading-relaxed mb-8 max-w-[520px]">
           Help us tailor your Atelier experience by sharing your career stage and current objectives.
         </p>
+
+        {apiError && (
+          <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5 text-red-500">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+            <span>{apiError}</span>
+          </div>
+        )}
 
         {/* ─── Form Card ─── */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_8px_rgba(0,0,0,0.04)] p-6 sm:p-8">
@@ -359,9 +405,11 @@ export default function JobReferencePage() {
           <button
             type="button"
             onClick={() => HandleNextStep()}
-            className="px-8 py-3 rounded-lg bg-[#2B7FE0] text-white text-sm font-semibold hover:bg-[#2470c9] active:scale-[0.98] transition-all duration-200 border-none cursor-pointer flex items-center gap-1.5 group"
+            disabled={isSubmitting}
+            className="px-8 py-3 rounded-lg bg-[#2B7FE0] text-white text-sm font-semibold hover:bg-[#2470c9] active:scale-[0.98] transition-all duration-200 border-none cursor-pointer flex items-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Continue to Final Step
+            {isSubmitting && <SpinnerIcon />}
+            {isSubmitting ? "Saving..." : "Continue to Final Step"}
           </button>
         </div>
       </div>
