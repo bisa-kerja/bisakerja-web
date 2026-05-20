@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import logo from "../public/assets/logo.svg";
 import { useAuth } from "@/lib/auth";
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 
 const navLinks = [
   { label: "Loker", href: "/" },
@@ -106,13 +107,14 @@ export default function Navbar() {
                   <p className="text-sm font-semibold text-gray-900 truncate">{user.username}</p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
-                <button
+                <Link
                   onClick={() => { setShowDropdown(false); }}
+                  href="/profile"
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 bg-transparent border-none cursor-pointer hover:bg-gray-50 transition-colors text-left"
                 >
                   <UserIcon />
                   Profile
-                </button>
+                </Link>
                 <div className="border-t border-gray-100 mx-2" />
                 <button
                   onClick={handleLogout}

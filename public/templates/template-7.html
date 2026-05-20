@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV Template 7</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color-bg-page: #f3f4f6;
+        --color-bg-container: #ffffff;
+        --color-bg-header: #334155; /* slate-700 */
+        --color-bg-header-to: #1e293b; /* slate-800 */
+        --color-bg-footer: #1e293b; /* slate-800 */
+        --color-text-light: #ffffff;
+        --color-text-light-muted: #d1d5db; /* gray-300 */
+        --color-text-dark: #1a202c;
+        --color-text-dark-heading: #111827; /* gray-900 */
+        --color-text-muted: #374151; /* gray-700 */
+        --color-text-muted-dark: #4b5563; /* gray-600 */
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--color-bg-page);
+        padding: 1rem;
+      }
+
+      .section-title {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .section-title h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--color-text-dark);
+        white-space: nowrap;
+      }
+
+      .section-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background-color: var(--color-text-dark);
+      }
+
+      .section-title::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        background-color: var(--color-text-dark);
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .profile-photo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .text-justify {
+        text-align: justify;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: var(--color-bg-container);
+        }
+        .cv-container {
+          box-shadow: none;
+          margin: 0;
+          width: 100%;
+          border-radius: 0;
+          max-width: 100%;
+        }
+        .cv-header,
+        .cv-footer {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+        .no-print {
+          display: none;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      ul {
+        list-style: none;
+      }
+
+      .cv-container {
+        max-width: 56rem;
+        margin-left: auto;
+        margin-right: auto;
+        background-color: var(--color-bg-container);
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      }
+
+      .cv-header {
+        background-image: linear-gradient(
+          to right,
+          var(--color-bg-header),
+          var(--color-bg-header-to)
+        );
+        color: var(--color-text-light);
+        padding: 2rem 3rem;
+      }
+
+      .header-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .profile-name {
+        font-size: 2.25rem;
+        line-height: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-align: center;
+      }
+
+      .profile-title {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        color: var(--color-text-light-muted);
+        text-align: center;
+      }
+
+      .cv-body {
+        padding: 3rem 3rem;
+      }
+
+      .main-section {
+        margin-bottom: 3rem;
+      }
+
+      .about-text {
+        color: var(--color-text-muted);
+        line-height: 1.625;
+      }
+
+      .entry-list > * + * {
+        margin-top: 2rem;
+      }
+
+      .experience-meta {
+        color: var(--color-text-muted-dark);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .experience-title {
+        font-weight: 700;
+        color: var(--color-text-dark-heading);
+        margin-bottom: 0.5rem;
+      }
+
+      .duties-list {
+        list-style-type: disc;
+        list-style-position: inside;
+        color: var(--color-text-muted);
+        line-height: 1.625;
+      }
+      .duties-list > * + * {
+        margin-top: 0.25rem;
+      }
+
+      .education-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0 1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .education-date {
+        color: var(--color-text-muted-dark);
+        font-weight: 600;
+        min-width: 120px;
+      }
+
+      .education-title {
+        font-weight: 700;
+        color: var(--color-text-dark-heading);
+      }
+
+      .education-description {
+        color: var(--color-text-muted);
+        line-height: 1.625;
+      }
+
+      .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2rem;
+      }
+
+      .skill-list > * + * {
+        margin-top: 0.5rem;
+      }
+
+      .skill-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .skill-bullet {
+        color: var(--color-text-dark-heading);
+        margin-top: 0.25rem;
+      }
+
+      .skill-name {
+        color: var(--color-text-muted);
+      }
+
+      .cv-footer {
+        background-color: var(--color-bg-footer);
+        color: var(--color-text-light);
+        padding: 2rem 3rem;
+        margin-top: 3rem;
+      }
+
+      .footer-content {
+        max-width: 56rem;
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem 2rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+      }
+
+      .footer-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .footer-bullet {
+        width: 0.5rem;
+        height: 0.5rem;
+        background-color: var(--color-text-light);
+        border-radius: 9999px;
+      }
+
+      @media (min-width: 640px) {
+        .header-content {
+          flex-direction: row;
+        }
+
+        .profile-name,
+        .profile-title {
+          text-align: left;
+        }
+
+        .education-meta {
+          flex-direction: row;
+        }
+
+        .education-description {
+          margin-left: 136px;
+        }
+
+        .skills-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .footer-content {
+          flex-direction: row;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cv-container">
+      <header class="cv-header">
+        <div class="header-content">
+          <img
+            src="../../public/assets/images/random-picture.jpeg"
+            alt="Alex Doe"
+            class="profile-photo"
+            onerror="this.onerror=null;this.src='https.placehold.co/120x120/334155/ffffff?text=Gagal+Muat';"
+          />
+          <div class="profile-info">
+            <h1 class="profile-name">Alex Doe</h1>
+            <p class="profile-title">Senior Full-Stack Developer</p>
+          </div>
+        </div>
+      </header>
+      <main class="cv-body">
+        <section class="main-section">
+          <div class="section-title">
+            <h2>About Me</h2>
+          </div>
+          <p class="about-text text-justify">
+            A results-driven Senior Full-Stack Developer with over 7 years of experience. Proven
+            expertise in the entire development lifecycle, from concept to deployment. Adept at
+            leading development teams, architecting scalable solutions, and optimizing application
+            performance.
+          </p>
+        </section>
+        <section class="main-section">
+          <div class="section-title">
+            <h2>Work Experience</h2>
+          </div>
+          <div class="entry-list">
+            <div class="experience-entry">
+              <div class="experience-meta">June 2021 - Present | Tech Solutions Inc.</div>
+              <h3 class="experience-title">SENIOR SOFTWARE ENGINEER</h3>
+              <ul class="duties-list">
+                <li class="text-justify">
+                  Led the architecture of a new microservices-based e-commerce platform, increasing
+                  system scalability by 200%.
+                </li>
+                <li class="text-justify">
+                  Mentored a team of 4 junior developers, improving team productivity and code
+                  quality.
+                </li>
+              </ul>
+            </div>
+            <div class="experience-entry">
+              <div class="experience-meta">May 2018 - June 2021 | Innovate Co.</div>
+              <h3 class="experience-title">FULL-STACK DEVELOPER</h3>
+              <ul class="duties-list">
+                <li class="text-justify">
+                  Developed and maintained full-stack web applications for various clients using the
+                  MERN stack.
+                </li>
+                <li class="text-justify">
+                  Managed application deployment and maintenance on AWS EC2 and S3.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+        <section class="main-section">
+          <div class="section-title">
+            <h2>Education</h2>
+          </div>
+          <div class="entry-list">
+            <div class="education-entry">
+              <div class="education-meta">
+                <span class="education-date">2014 - 2018</span>
+                <h3 class="education-title">
+                  B.Sc. IN COMPUTER SCIENCE | UNIVERSITY OF CALIFORNIA, BERKELEY
+                </h3>
+              </div>
+              <p class="education-description text-justify">
+                Graduated with honors, focusing on software engineering principles, data structures,
+                and algorithms. Actively involved in the university's coding club.
+              </p>
+            </div>
+          </div>
+        </section>
+        <section class="main-section">
+          <div class="section-title">
+            <h2>Skills</h2>
+          </div>
+          <div class="skills-grid">
+            <div class="skills-column">
+              <ul class="skill-list">
+                <li class="skill-item">
+                  <span class="skill-bullet">•</span><span class="skill-name">React & Next.js</span>
+                </li>
+                <li class="skill-item">
+                  <span class="skill-bullet">•</span><span class="skill-name">TypeScript</span>
+                </li>
+              </ul>
+            </div>
+            <div class="skills-column">
+              <ul class="skill-list">
+                <li class="skill-item">
+                  <span class="skill-bullet">•</span
+                  ><span class="skill-name">Node.js & Express</span>
+                </li>
+                <li class="skill-item">
+                  <span class="skill-bullet">•</span><span class="skill-name">Laravel & PHP</span>
+                </li>
+              </ul>
+            </div>
+            <div class="skills-column">
+              <ul class="skill-list">
+                <li class="skill-item">
+                  <span class="skill-bullet">•</span
+                  ><span class="skill-name">Docker & Kubernetes</span>
+                </li>
+                <li class="skill-item">
+                  <span class="skill-bullet">•</span><span class="skill-name">CI/CD & AWS</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="cv-footer">
+        <div class="footer-content">
+          <div class="footer-item">
+            <span class="footer-bullet"></span>
+            <span>+1 (555) 123-4567</span>
+          </div>
+          <div class="footer-item">
+            <span class="footer-bullet"></span>
+            <span>alex.doe@email.com</span>
+          </div>
+          <div class="footer-item">
+            <span class="footer-bullet"></span>
+            <span>San Francisco, CA</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

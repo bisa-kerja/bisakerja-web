@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV Template 4</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Montserrat:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <style>
+      :root {
+        --color-text-light: #d1d5db; /* text-gray-300 */
+        --color-text-muted: #9ca3af; /* text-gray-400 */
+        --color-text-muted-dark: #6b7280; /* text-gray-500 */
+        --color-text-heading: #ffffff;
+        --color-text-sidebar-heading: #e5e7eb; /* text-gray-200 */
+        --color-primary: #2dd4bf; /* text-teal-400 */
+        --color-bg-page: #f3f4f6;
+        --color-bg-main: #1f2937; /* bg-gray-800 */
+        --color-bg-sidebar: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
+        --color-bg-icon: #374151; /* bg-gray-700 */
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--color-bg-page);
+        color: var(--color-text-light);
+        padding: 1rem;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: "Montserrat", sans-serif;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      ul {
+        list-style: none;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: var(--color-bg-main);
+        }
+        .cv-container {
+          box-shadow: none;
+          margin: 0;
+          width: 100%;
+          border-radius: 0;
+          max-width: 100%;
+        }
+        .no-print {
+          display: none;
+        }
+        .sidebar,
+        .entry-icon-wrapper {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+      }
+
+      .cv-container {
+        max-width: 56rem;
+        margin-left: auto;
+        margin-right: auto;
+        background-color: var(--color-bg-main);
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+        overflow: hidden;
+      }
+
+      .cv-main {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        background-color: var(--color-bg-sidebar);
+        padding: 2rem;
+      }
+
+      .profile-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .profile-photo {
+        width: 10rem;
+        height: 10rem;
+        border-radius: 9999px;
+        border: 4px solid var(--color-primary);
+        object-fit: cover;
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      }
+
+      .profile-name {
+        font-size: 2.25rem;
+        line-height: 2.5rem;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        color: var(--color-text-heading);
+      }
+
+      .profile-title {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        color: var(--color-primary);
+        margin-top: 0.25rem;
+      }
+
+      .profile-summary {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        margin-top: 1rem;
+        color: var(--color-text-muted);
+        line-height: 1.625;
+      }
+
+      .sidebar-section {
+        margin-top: 2.5rem;
+      }
+
+      .sidebar-title {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--color-text-heading);
+        letter-spacing: 0.05em;
+      }
+
+      .contact-list,
+      .education-list,
+      .skill-list {
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+      }
+
+      .contact-item {
+        display: flex;
+        align-items: center;
+        color: var(--color-text-light);
+      }
+      .contact-item:hover {
+        color: var(--color-primary);
+      }
+
+      .contact-icon {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        margin-right: 0.75rem;
+        width: 1.25rem;
+        text-align: center;
+      }
+
+      .education-degree,
+      .skill-category {
+        font-weight: 600;
+        color: var(--color-text-sidebar-heading);
+      }
+
+      .education-school,
+      .skill-tags {
+        color: var(--color-text-muted);
+      }
+
+      .education-date {
+        font-size: 0.75rem;
+        line-height: 1rem;
+        color: var(--color-text-muted-dark);
+      }
+
+      .skill-tags {
+        font-size: 0.75rem;
+        line-height: 1rem;
+      }
+
+      .main-content {
+        width: 100%;
+        padding: 2rem;
+      }
+
+      .main-section {
+        margin-top: 2.5rem;
+      }
+      .main-content > .main-section:first-child {
+        margin-top: 0;
+      }
+
+      .main-section-title {
+        font-size: 1.875rem;
+        line-height: 2.25rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--color-text-heading);
+        letter-spacing: 0.05em;
+      }
+
+      .entry-list {
+        margin-top: 1.5rem;
+      }
+
+      .entry-item {
+        display: flex;
+      }
+
+      .entry-icon-wrapper {
+        margin-right: 1rem;
+        background-color: var(--color-bg-icon);
+        width: 3rem;
+        height: 3rem;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .entry-icon {
+        font-size: 1.5rem;
+        line-height: 2rem;
+        color: var(--color-primary);
+      }
+
+      .cert-entry .entry-title {
+        margin-bottom: 0;
+      }
+
+      .entry-title {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        font-weight: 700;
+        color: var(--color-primary);
+      }
+
+      .entry-subtitle {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-muted);
+        margin-bottom: 0.5rem;
+      }
+
+      .entry-description {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-light);
+      }
+
+      .cert-subtitle {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-light);
+      }
+
+      .cert-entry {
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .list-space-y-3 > * + * {
+        margin-top: 0.75rem;
+      }
+      .list-space-y-4 > * + * {
+        margin-top: 1rem;
+      }
+      .list-space-y-8 > * + * {
+        margin-top: 2rem;
+      }
+
+      @media (min-width: 768px) {
+        body {
+          padding: 2rem;
+        }
+        .cv-main {
+          flex-direction: row;
+        }
+        .sidebar {
+          width: 40%;
+        }
+        .main-content {
+          width: 60%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cv-container">
+      <main class="cv-main">
+        <aside class="sidebar">
+          <div class="profile-header">
+            <img
+              src="../../public/assets/images/random-picture.jpeg"
+              alt="Profile Picture"
+              class="profile-photo"
+              onerror="this.onerror=null;this.src='https://placehold.co/160x160/2dd4bf/1f2937?text=Gagal+Muat';"
+            />
+            <h1 class="profile-name">Alex Doe</h1>
+            <h2 class="profile-title">Senior Full-Stack Developer</h2>
+            <p class="profile-summary">
+              Hello, I'm Alex. A passionate developer with 7+ years of experience crafting scalable,
+              high-performance web applications from scratch.
+            </p>
+          </div>
+          <section class="sidebar-section">
+            <h3 class="sidebar-title">Contact Info</h3>
+            <div class="contact-list list-space-y-3">
+              <a href="tel:+15551234567" class="contact-item">
+                <i class="bx bxs-phone contact-icon"></i>
+                <span>+1 (555) 123-4567</span>
+              </a>
+              <a href="mailto:alex.doe@email.com" class="contact-item">
+                <i class="bx bxs-envelope contact-icon"></i>
+                <span>alex.doe@email.com</span>
+              </a>
+              <a href="#" class="contact-item">
+                <i class="bx bxl-linkedin-square contact-icon"></i>
+                <span>linkedin.com/in/alexdoe-dev</span>
+              </a>
+            </div>
+          </section>
+          <section class="sidebar-section">
+            <h3 class="sidebar-title">Education</h3>
+            <div class="education-list list-space-y-4">
+              <div class="education-item">
+                <p class="education-degree">B.Sc. in Computer Science</p>
+                <p class="education-school">University of California, Berkeley</p>
+                <p class="education-date">2014 - 2018</p>
+              </div>
+              <div class="education-item">
+                <p class="education-degree">High School Diploma</p>
+                <p class="education-school">Silicon Valley High</p>
+                <p class="education-date">2010 - 2014</p>
+              </div>
+            </div>
+          </section>
+          <section class="sidebar-section">
+            <h3 class="sidebar-title">Skills</h3>
+            <div class="skill-list list-space-y-3">
+              <div class="skill-item">
+                <h4 class="skill-category">Frontend</h4>
+                <p class="skill-tags">React, Next.js, TypeScript, Tailwind CSS</p>
+              </div>
+              <div class="skill-item">
+                <h4 class="skill-category">Backend</h4>
+                <p class="skill-tags">Node.js, Express, Laravel, PostgreSQL, MySQL</p>
+              </div>
+              <div class="skill-item">
+                <h4 class="skill-category">Cloud & DevOps</h4>
+                <p class="skill-tags">AWS, Docker, Kubernetes, CI/CD, Terraform</p>
+              </div>
+              <div class="skill-item">
+                <h4 class="skill-category">Testing</h4>
+                <p class="skill-tags">Jest, Cypress, PHPUnit</p>
+              </div>
+            </div>
+          </section>
+        </aside>
+        <div class="main-content">
+          <section class="main-section">
+            <h2 class="main-section-title">Work Experience</h2>
+            <div class="entry-list list-space-y-8">
+              <div class="entry-item">
+                <div class="entry-icon-wrapper">
+                  <i class="bx bxs-briefcase-alt-2 entry-icon"></i>
+                </div>
+                <div class="entry-content">
+                  <h3 class="entry-title">Senior Software Engineer</h3>
+                  <p class="entry-subtitle">Tech Solutions Inc. | 2021 - Present</p>
+                  <p class="entry-description">
+                    Led architecture of a new microservices platform, boosting system scalability by
+                    200% and mentoring a team of 4 junior developers.
+                  </p>
+                </div>
+              </div>
+              <div class="entry-item">
+                <div class="entry-icon-wrapper">
+                  <i class="bx bxs-briefcase-alt-2 entry-icon"></i>
+                </div>
+                <div class="entry-content">
+                  <h3 class="entry-title">Full-Stack Developer</h3>
+                  <p class="entry-subtitle">Innovate Co. | 2018 - 2021</p>
+                  <p class="entry-description">
+                    Developed 10+ full-stack applications for clients using the MERN stack,
+                    achieving 95% satisfaction and managing deployments on AWS.
+                  </p>
+                </div>
+              </div>
+              <div class="entry-item">
+                <div class="entry-icon-wrapper">
+                  <i class="bx bxs-briefcase-alt-2 entry-icon"></i>
+                </div>
+                <div class="entry-content">
+                  <h3 class="entry-title">Software Engineer Intern</h3>
+                  <p class="entry-subtitle">Data Corp. | Summer 2017</p>
+                  <p class="entry-description">
+                    Assisted in developing internal tools and writing unit tests, which helped to
+                    increase overall code coverage by 15%.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="main-section">
+            <h2 class="main-section-title">Projects</h2>
+            <div class="entry-list list-space-y-8">
+              <div class="entry-item">
+                <div class="entry-icon-wrapper">
+                  <i class="bx bxs-flask entry-icon"></i>
+                </div>
+                <div class="entry-content">
+                  <h3 class="entry-title">TaskFlow Pro - Project Management Tool</h3>
+                  <p class="entry-description">
+                    A full-stack project management app with Kanban boards and real-time
+                    collaboration via WebSockets. Built with Next.js, Express, and PostgreSQL.
+                  </p>
+                </div>
+              </div>
+              <div class="entry-item">
+                <div class="entry-icon-wrapper">
+                  <i class="bx bxs-flask entry-icon"></i>
+                </div>
+                <div class="entry-content">
+                  <h3 class="entry-title">CodeVerse - Developer Forum</h3>
+                  <p class="entry-description">
+                    A community forum for developers. Built with Laravel and Livewire, featuring
+                    rich text editing and a reputation system based on user activity.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="main-section">
+            <h2 class="main-section-title">Certifications</h2>
+            <div class="entry-list list-space-y-4">
+              <div class="cert-entry">
+                <div class="entry-icon-wrapper">
+                  <i class="bx bxs-file entry-icon"></i>
+                </div>
+                <div class="entry-content">
+                  <h3 class="entry-title">AWS Certified Solutions Architect - Associate</h3>
+                  <p class="cert-subtitle">Amazon Web Services (Issued 2022)</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

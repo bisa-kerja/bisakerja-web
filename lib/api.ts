@@ -1,6 +1,11 @@
 /* ─── API Client for Bisakerja Backend ─── */
 
-const BASE_URL = "https://bisakerja-api.salmanabdurrahman.my.id/api/v1";
+/**
+ * All API calls go through the local Next.js proxy at /api/bisakerja/...
+ * which forwards them server-side to the real backend, avoiding CORS.
+ * See app/api/bisakerja/[...path]/route.ts
+ */
+const BASE_URL = "/api/bisakerja";
 
 /* ─── Types ─── */
 
@@ -152,6 +157,101 @@ export interface APIJobDetailResponse {
   meta: unknown;
 }
 
+export interface APIBookmark {
+  id: string;
+  job: APIJob;
+  createdAt: string;
+}
+
+export interface APIBookmarksResponse {
+  success: boolean;
+  message: string;
+  data: APIBookmark[];
+  meta: {
+    pagination: APIPagination;
+    filters: Record<string, unknown>;
+    sort: string;
+  };
+}
+
+export interface CreateBookmarkResponse {
+  success: boolean;
+  message: string;
+  data: APIBookmark;
+  meta: unknown;
+}
+
+export interface DeleteBookmarkResponse {
+  success: boolean;
+  message: string;
+  data: null;
+  meta: unknown;
+}
+
+export type ApplicationStatus =
+  | "APPLIED"
+  | "SCREENING"
+  | "INTERVIEW"
+  | "OFFER"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "WITHDRAWN";
+
+export interface APIApplication {
+  id: string;
+  status: ApplicationStatus | string;
+  notes: string | null;
+  source: string | null;
+  appliedAt: string;
+  updatedAt: string;
+  job: APIJob;
+}
+
+export interface ApplicationsSearchParams {
+  page?: number;
+  limit?: number;
+  keyword?: string;
+  status?: string;
+  sort?: string;
+}
+
+export interface APIApplicationsResponse {
+  success: boolean;
+  message: string;
+  data: APIApplication[];
+  meta: {
+    pagination: APIPagination;
+    filters: Record<string, unknown>;
+    sort: string;
+  };
+}
+
+export interface CreateApplicationPayload {
+  jobId: string;
+  status?: ApplicationStatus;
+  notes?: string;
+  source?: string;
+}
+
+export interface CreateApplicationResponse {
+  success: boolean;
+  message: string;
+  data: APIApplication;
+  meta: unknown;
+}
+
+export interface UpdateApplicationStatusPayload {
+  status: ApplicationStatus;
+  notes?: string;
+}
+
+export interface UpdateApplicationStatusResponse {
+  success: boolean;
+  message: string;
+  data: APIApplication;
+  meta: unknown;
+}
+
 export interface APIErrorResponse {
   success: false;
   message: string;
@@ -201,12 +301,12 @@ export function clearStoredUser() {
 
 async function apiFetch<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const token = getAccessToken();
   const headers: HeadersInit = {
     Accept: "application/json",
-    ...(options.headers as Record<string, string> || {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
 
   if (token) {
@@ -228,7 +328,12 @@ async function apiFetch<T>(
 
   if (!res.ok) {
     const err = json as APIErrorResponse;
-    throw new APIError(err.message, err.error?.code ?? "UNKNOWN", res.status, err.error?.details);
+    throw new APIError(
+      err.message,
+      err.error?.code ?? "UNKNOWN",
+      res.status,
+      err.error?.details,
+    );
   }
 
   return json as T;
@@ -250,7 +355,9 @@ export class APIError extends Error {
 
 /* ─── Auth API ─── */
 
-export async function registerUser(payload: RegisterPayload): Promise<AuthResponse> {
+export async function registerUser(
+  payload: RegisterPayload,
+): Promise<AuthResponse> {
   return apiFetch<AuthResponse>("/auth/register", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -262,12 +369,15 @@ export async function loginUser(payload: LoginPayload): Promise<AuthResponse> {
     method: "POST",
     body: JSON.stringify({
       identifier: payload.email,
-      password: payload.password
+      password: payload.password,
     }),
   });
 }
 
-export async function logoutUser(): Promise<{ success: boolean; message: string }> {
+export async function logoutUser(): Promise<{
+  success: boolean;
+  message: string;
+}> {
   return apiFetch("/auth/logout", {
     method: "POST",
   });
@@ -279,8 +389,108 @@ export async function refreshToken(): Promise<AuthResponse> {
   });
 }
 
+/* ─── Verify Email ─── */
+
+export interface VerifyEmailPayload {
+  email: string;
+  otp: string;
+}
+
+export interface VerifyEmailResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      username: string;
+      email: string;
+      emailVerified: boolean;
+      onboardingStatus: string;
+      createdAt: string;
+    };
+  } | null;
+  meta: unknown;
+}
+
+export async function verifyEmail(
+  payload: VerifyEmailPayload,
+): Promise<VerifyEmailResponse> {
+  return apiFetch<VerifyEmailResponse>("/auth/verify-email", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/* ─── Profile / Me API ─── */
+
+export interface ProfilePhoto {
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export interface ProfileSkill {
+  id: string;
+  name: string;
+  level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT" | string;
+}
+
+export interface ProfileExperience {
+  id: string;
+  title: string;
+  company: string;
+  employmentType: string;
+  startDate: string;
+  endDate: string | null;
+  isCurrent: boolean;
+  description: string;
+}
+
+export interface ProfileEducation {
+  id: string;
+  institution: string;
+  degree: string;
+  fieldOfStudy: string;
+  startYear: number;
+  endYear: number | null;
+}
+
+export interface ProfileData {
+  id: string;
+  username: string;
+  email: string;
+  emailVerified: boolean;
+  phoneNumber: string;
+  displayName: string;
+  profilePhoto: ProfilePhoto | null;
+  onboardingStatus: string;
+  profile: {
+    careerStatus: string;
+    latestRole: string;
+    summary: string;
+  } | null;
+  skills: ProfileSkill[];
+  experience: ProfileExperience[];
+  education: ProfileEducation[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProfileResponse {
+  success: boolean;
+  message: string;
+  data: ProfileData;
+  meta: null;
+}
+
+export async function fetchProfile(): Promise<ProfileResponse> {
+  return apiFetch<ProfileResponse>("/me");
+}
+
 /* ─── User API ─── */
-export async function updatePreferences(payload: PreferencesUpsertRequest): Promise<PreferencesResponse> {
+export async function updatePreferences(
+  payload: PreferencesUpsertRequest,
+): Promise<PreferencesResponse> {
   return apiFetch<PreferencesResponse>("/me/preferences", {
     method: "PUT",
     body: JSON.stringify(payload),
@@ -307,7 +517,16 @@ export interface JobSearchParams {
   sort?: string;
 }
 
-export async function fetchJobs(params: JobSearchParams = {}): Promise<APIJobsResponse> {
+export interface BookmarkSearchParams {
+  page?: number;
+  limit?: number;
+  keyword?: string;
+  sort?: string;
+}
+
+export async function fetchJobs(
+  params: JobSearchParams = {},
+): Promise<APIJobsResponse> {
   const query = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
@@ -322,6 +541,91 @@ export async function fetchJobs(params: JobSearchParams = {}): Promise<APIJobsRe
   return apiFetch<APIJobsResponse>(`/jobs?${query.toString()}`);
 }
 
-export async function fetchJobDetail(jobId: string): Promise<APIJobDetailResponse> {
+export async function fetchJobDetail(
+  jobId: string,
+): Promise<APIJobDetailResponse> {
   return apiFetch<APIJobDetailResponse>(`/jobs/${jobId}`);
+}
+
+/* ─── Bookmarks API ─── */
+
+export async function fetchBookmarks(
+  params: BookmarkSearchParams = {},
+): Promise<APIBookmarksResponse> {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      query.set(key, String(value));
+    }
+  });
+
+  if (!query.has("page")) query.set("page", "1");
+  if (!query.has("limit")) query.set("limit", "20");
+  if (!query.has("sort")) query.set("sort", "created_desc");
+
+  return apiFetch<APIBookmarksResponse>(`/me/bookmarks?${query.toString()}`);
+}
+
+export async function createBookmark(
+  jobId: string,
+): Promise<CreateBookmarkResponse> {
+  return apiFetch<CreateBookmarkResponse>("/me/bookmarks", {
+    method: "POST",
+    body: JSON.stringify({ jobId }),
+  });
+}
+
+export async function deleteBookmark(
+  jobId: string,
+): Promise<DeleteBookmarkResponse> {
+  return apiFetch<DeleteBookmarkResponse>(`/me/bookmarks/${jobId}`, {
+    method: "DELETE",
+  });
+}
+
+/* ─── Applications API ─── */
+
+export async function fetchApplications(
+  params: ApplicationsSearchParams = {},
+): Promise<APIApplicationsResponse> {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      query.set(key, String(value));
+    }
+  });
+
+  if (!query.has("page")) query.set("page", "1");
+  if (!query.has("limit")) query.set("limit", "20");
+  if (!query.has("sort")) query.set("sort", "updated_desc");
+
+  return apiFetch<APIApplicationsResponse>(
+    `/me/applications?${query.toString()}`,
+  );
+}
+
+export async function createApplication(
+  payload: CreateApplicationPayload,
+): Promise<CreateApplicationResponse> {
+  return apiFetch<CreateApplicationResponse>("/me/applications", {
+    method: "POST",
+    body: JSON.stringify({
+      status: "APPLIED",
+      source: "EXTERNAL_APPLY_CLICK",
+      ...payload,
+    }),
+  });
+}
+
+export async function updateApplicationStatus(
+  applicationId: string,
+  payload: UpdateApplicationStatusPayload,
+): Promise<UpdateApplicationStatusResponse> {
+  return apiFetch<UpdateApplicationStatusResponse>(
+    `/me/applications/${applicationId}/status`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    },
+  );
 }

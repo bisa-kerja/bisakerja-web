@@ -3,9 +3,15 @@
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { fetchJobDetail, type APIJobDetail } from "@/lib/api";
+import {
+  APIError,
+  createApplication,
+  fetchJobDetail,
+  type APIJobDetail,
+} from "@/lib/api";
 
 /* ─── Enum label mappings ─── */
 const employmentTypeMap: Record<string, string> = {
@@ -136,15 +142,6 @@ function ClockIcon() {
   );
 }
 
-function CheckCircleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-  );
-}
-
 function CircleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -169,9 +166,13 @@ export default function JobDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
   const [job, setJob] = useState<APIJobDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
+  const [applyMessage, setApplyMessage] = useState<string | null>(null);
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -244,6 +245,41 @@ export default function JobDetailPage({
     .substring(0, 3)
     .toUpperCase();
 
+  const handleApply = async () => {
+    if (isApplying) return;
+
+    setIsApplying(true);
+    setApplyMessage(null);
+    setApplyError(null);
+
+    try {
+      await createApplication({
+        jobId: job.id,
+        status: "APPLIED",
+        notes: `Applied from ${job.sourcePlatform?.name ?? "job detail"} after clicking apply.`,
+        source: "EXTERNAL_APPLY_CLICK",
+      });
+      setApplyMessage("Lamaran ditambahkan ke Application Tracker.");
+
+      if (job.externalApplyUrl) {
+        window.open(job.externalApplyUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      if (error instanceof APIError && error.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      setApplyError(
+        error instanceof Error
+          ? error.message
+          : "Gagal menambahkan lamaran ke Application Tracker.",
+      );
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50" style={{ colorScheme: "light" }}>
       <Navbar />
@@ -300,25 +336,28 @@ export default function JobDetailPage({
 
           {/* Right: Actions */}
           <div className="flex flex-col items-end gap-3 shrink-0">
-            {job.externalApplyUrl ? (
-              <a
-                id="apply-button"
-                href={job.externalApplyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg border-none text-sm font-semibold cursor-pointer hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md no-underline"
+            <button
+              id="apply-button"
+              type="button"
+              disabled={isApplying}
+              onClick={handleApply}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg border-none text-sm font-semibold cursor-pointer hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:cursor-wait disabled:opacity-70"
+            >
+              {isApplying
+                ? "Menyimpan..."
+                : job.externalApplyUrl
+                  ? `Apply on ${job.sourcePlatform?.name || "Platform"}`
+                  : "Apply"}
+              <ExternalLinkIcon />
+            </button>
+            {(applyMessage || applyError) && (
+              <p
+                className={`max-w-[280px] text-right text-xs font-medium ${
+                  applyError ? "text-red-600" : "text-green-600"
+                }`}
               >
-                Apply on {job.sourcePlatform?.name || "Platform"}
-                <ExternalLinkIcon />
-              </a>
-            ) : (
-              <button
-                id="apply-button"
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg border-none text-sm font-semibold cursor-pointer hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
-              >
-                Apply
-                <ExternalLinkIcon />
-              </button>
+                {applyError ?? applyMessage}
+              </p>
             )}
             <div className="flex items-center gap-4">
               <button className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors p-0">
@@ -363,7 +402,7 @@ export default function JobDetailPage({
                   {qualificationReqs.map((req, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <span className="shrink-0 mt-0.5">
-                        {req.type === "EXPERIENCE" ? <CheckCircleIcon /> : <CircleIcon />}
+                        <CircleIcon />
                       </span>
                       <span className="text-[15px] text-gray-600 leading-relaxed">{req.value}</span>
                     </li>

@@ -4,7 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import JobCard from "@/components/JobCard";
-import { fetchJobs, type APIJob, type APIPagination, type JobSearchParams } from "@/lib/api";
+import {
+  APIError,
+  fetchBookmarks,
+  fetchJobs,
+  type APIJob,
+  type APIPagination,
+  type JobSearchParams,
+} from "@/lib/api";
 
 /* ─── Icon Components ─── */
 function SearchIcon() {
@@ -80,6 +87,9 @@ export default function Home() {
   const [pagination, setPagination] = useState<APIPagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookmarkByJobId, setBookmarkByJobId] = useState<Record<string, string>>(
+    {},
+  );
 
   // Search & filter state
   const [keyword, setKeyword] = useState("");
@@ -121,8 +131,67 @@ export default function Home() {
   }, [page, keyword, filters, sort]);
 
   useEffect(() => {
-    loadJobs();
+    const timeoutId = window.setTimeout(() => {
+      loadJobs();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadJobs]);
+
+  const loadBookmarkIndex = useCallback(async () => {
+    try {
+      let bookmarkPage = 1;
+      let hasNextPage = true;
+      const nextBookmarkByJobId: Record<string, string> = {};
+
+      while (hasNextPage) {
+        const res = await fetchBookmarks({
+          page: bookmarkPage,
+          limit: 100,
+          sort: "created_desc",
+        });
+
+        res.data.forEach((bookmark) => {
+          nextBookmarkByJobId[bookmark.job.id] = bookmark.id;
+        });
+
+        hasNextPage = res.meta.pagination.hasNextPage;
+        bookmarkPage += 1;
+      }
+
+      setBookmarkByJobId(nextBookmarkByJobId);
+    } catch (err: unknown) {
+      if (err instanceof APIError && err.status === 401) {
+        setBookmarkByJobId({});
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      loadBookmarkIndex();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loadBookmarkIndex]);
+
+  const handleBookmarkChange = (
+    jobId: string,
+    isBookmarked: boolean,
+    bookmarkId?: string,
+  ) => {
+    setBookmarkByJobId((current) => {
+      const next = { ...current };
+
+      if (isBookmarked && bookmarkId) {
+        next[jobId] = bookmarkId;
+      } else {
+        delete next[jobId];
+      }
+
+      return next;
+    });
+  };
 
   const handleSearch = () => {
     setKeyword(searchInput);
@@ -306,7 +375,13 @@ export default function Home() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
               {jobs.map((job) => (
-                <JobCard key={job.id} job={job} />
+                <JobCard
+                  key={`${job.id}-${bookmarkByJobId[job.id] ?? "unsaved"}`}
+                  job={job}
+                  defaultBookmarked={Boolean(bookmarkByJobId[job.id])}
+                  bookmarkId={bookmarkByJobId[job.id]}
+                  onBookmarkChange={handleBookmarkChange}
+                />
               ))}
             </div>
 

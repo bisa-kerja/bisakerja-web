@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import JobCard, { type JobCardProps } from "./JobCard";
 
 /* ─── Icon Components ─── */
@@ -54,13 +54,36 @@ function SparkleIcon() {
   );
 }
 
+function CheckIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M20 6L9 17l-5-5"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SpinnerIcon() {
+  return (
+    <svg className="cv-spinner" width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="#BFDBFE" strokeWidth="2.5" />
+      <path d="M12 2a10 10 0 0 1 10 10" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /* ─── Mock Data ─── */
 const overallImpression = `Overall, your CV leaves an exceptionally strong impression. It is well-structured, highly engaging, and immediately captures attention with its clear presentation of technical skills and quantifiable achievements. The depth of your work experience, coupled with impressive competition wins and a clear professional summary, makes this a standout resume. It effectively communicates your expertise as a Front End Developer and your passion for the field.`;
 
 const sections = [
   {
     title: "Contact Information",
-    score: 98,
+
     analysis: `Your contact information is exceptionally complete and well-presented. You've included your full name, phone number, email address, LinkedIn profile, GitHub, and even a personal portfolio link. This provides recruiters with multiple avenues to connect with you and review your work, which is highly beneficial.`,
     actionPoints: [
       "Ensure all links, especially your GitHub and portfolio, are active and showcase your best and most recent projects. A broken link can be a missed opportunity.",
@@ -70,7 +93,6 @@ const sections = [
   },
   {
     title: "Relevant Skills",
-    score: 98,
     analysis: `Your skills section is comprehensive and well-organized, covering a wide range of relevant front-end technologies and tools. The inclusion of both technical skills and soft skills provides a balanced view of your capabilities.`,
     actionPoints: [
       "Consider grouping skills by category (e.g., Languages, Frameworks, Tools) for better readability.",
@@ -80,7 +102,6 @@ const sections = [
   },
   {
     title: "Professional Summary",
-    score: 85,
     analysis: `Your professional summary provides a good overview but could be more targeted. It mentions your experience but lacks specific metrics and achievements that would make it more impactful.`,
     actionPoints: [
       "Add quantifiable achievements to your summary (e.g., 'improved page load times by 40%').",
@@ -90,7 +111,6 @@ const sections = [
   },
   {
     title: "Work Experience",
-    score: 92,
     analysis: `Your work experience section is detailed and well-structured with clear descriptions of responsibilities and achievements at each role.`,
     actionPoints: [
       "Ensure all dates use the same format (e.g., MM/YYYY - MM/YYYY) for consistency.",
@@ -175,6 +195,35 @@ const actionableSteps = [
   },
 ];
 
+const cvTemplates = [
+  { id: "template-1", name: "Template 1", path: "/templates/template-1.html", accent: "#1F2937" },
+  { id: "template-2", name: "Template 2", path: "/templates/template-2.html", accent: "#2563EB" },
+  { id: "template-3", name: "Template 3", path: "/templates/template-3.html", accent: "#0D9488" },
+  { id: "template-4", name: "Template 4", path: "/templates/template-4.html", accent: "#2DD4BF" },
+  { id: "template-5", name: "Template 5", path: "/templates/template-5.html", accent: "#1E3A5F" },
+  { id: "template-6", name: "Template 6", path: "/templates/template-6.html", accent: "#2563EB" },
+  { id: "template-7", name: "Template 7", path: "/templates/template-7.html", accent: "#0F766E" },
+  { id: "template-8", name: "Template 8", path: "/templates/template-8.html", accent: "#7C3AED" },
+  { id: "template-9", name: "Template 9", path: "/templates/template-9.html", accent: "#EA580C" },
+  { id: "template-10", name: "Template 10", path: "/templates/template-10.html", accent: "#4B5563" },
+  { id: "template-11", name: "Template 11", path: "/templates/template-11.html", accent: "#2563EB" },
+  { id: "template-12", name: "Template 12", path: "/templates/template-12.html", accent: "#0D9488" },
+  { id: "template-13", name: "Template 13", path: "/templates/template-13.html", accent: "#7C3AED" },
+  { id: "template-14", name: "Template 14", path: "/templates/template-14.html", accent: "#DC2626" },
+  { id: "template-15", name: "Template 15", path: "/templates/template-15.html", accent: "#0891B2" },
+  { id: "template-16", name: "Template 16", path: "/templates/template-16.html", accent: "#334155" },
+  { id: "template-17", name: "Template 17", path: "/templates/template-17.html", accent: "#16A34A" },
+  { id: "template-18", name: "Template 18", path: "/templates/template-18.html", accent: "#9333EA" },
+  { id: "template-19", name: "Template 19", path: "/templates/template-19.html", accent: "#C2410C" },
+];
+
+const generationSteps = [
+  "Applying selected template...",
+  "Rewriting action points into CV bullets...",
+  "Optimizing keywords for ATS...",
+  "Polishing layout and spacing...",
+];
+
 /* ─── Score Ring Component ─── */
 function ScoreRing({
   score,
@@ -217,6 +266,288 @@ function ScoreRing({
   );
 }
 
+function TemplatePreview({ template }: { template: (typeof cvTemplates)[0] }) {
+  return (
+    <div
+      style={{
+        border: "1px solid #E5E7EB",
+        borderRadius: "10px",
+        padding: "8px",
+        background: "#F8FAFC",
+        overflow: "hidden",
+        height: "210px",
+        position: "relative",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: "8px",
+          background: template.accent,
+          opacity: 0.08,
+          borderRadius: "8px",
+        }}
+      />
+      <iframe
+        src={template.path}
+        title={`${template.name} preview`}
+        style={{
+          width: "320%",
+          height: "320%",
+          border: "0",
+          transform: "scale(0.3125)",
+          transformOrigin: "top left",
+          pointerEvents: "none",
+          background: "#fff",
+          borderRadius: "8px",
+        }}
+      />
+    </div>
+  );
+}
+
+function TemplatePickerModal({
+  onClose,
+  onChoose,
+}: {
+  onClose: () => void;
+  onChoose: (template: (typeof cvTemplates)[0]) => void;
+}) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 60,
+        background: "rgba(15, 23, 42, 0.45)",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "20px",
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="template-picker-title"
+    >
+      <div
+        style={{
+          width: "min(1120px, 100%)",
+          maxHeight: "calc(100vh - 40px)",
+          overflowY: "auto",
+          background: "#fff",
+          borderRadius: "18px",
+          border: "1px solid #E5E7EB",
+          boxShadow: "0 24px 80px rgba(15, 23, 42, 0.24)",
+          padding: "24px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "16px",
+            marginBottom: "20px",
+          }}
+        >
+          <div>
+            <p
+              style={{
+                fontSize: "11px",
+                fontWeight: 800,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                color: "#2563EB",
+                margin: "0 0 6px 0",
+              }}
+            >
+              Optimized CV Template
+            </p>
+            <h2
+              id="template-picker-title"
+              style={{
+                fontSize: "22px",
+                fontWeight: 800,
+                color: "#1E293B",
+                margin: 0,
+              }}
+            >
+              Pilih template CV kamu
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close template picker"
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
+              border: "1px solid #E5E7EB",
+              background: "#fff",
+              color: "#64748B",
+              cursor: "pointer",
+              fontSize: "20px",
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {cvTemplates.map((template) => (
+            <button
+              key={template.id}
+              onClick={() => onChoose(template)}
+              style={{
+                textAlign: "left",
+                border: "1px solid #E5E7EB",
+                background: "#fff",
+                borderRadius: "14px",
+                padding: "14px",
+                cursor: "pointer",
+                transition: "border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.borderColor = template.accent;
+                e.currentTarget.style.boxShadow = "0 14px 34px rgba(15, 23, 42, 0.10)";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.borderColor = "#E5E7EB";
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <TemplatePreview template={template} />
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                  marginTop: "14px",
+                }}
+              >
+                <div>
+                  <h3 style={{ fontSize: "15px", fontWeight: 800, color: "#1E293B", margin: "0 0 4px" }}>
+                    {template.name}
+                  </h3>
+                  <p style={{ fontSize: "12px", color: "#64748B", lineHeight: 1.5, margin: 0 }}>
+                    File: {template.path.replace("/templates/", "")}
+                  </p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CVGenerationOverlay({
+  currentStep,
+  templateName,
+}: {
+  currentStep: number;
+  templateName: string;
+}) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 70,
+        background: "rgba(239, 246, 255, 0.94)",
+        backdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}
+      role="status"
+      aria-live="polite"
+    >
+      <div
+        style={{
+          width: "min(520px, 100%)",
+          background: "#fff",
+          border: "1px solid #BFDBFE",
+          borderRadius: "20px",
+          boxShadow: "0 24px 70px rgba(37, 99, 235, 0.18)",
+          padding: "28px",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            width: "64px",
+            height: "64px",
+            borderRadius: "18px",
+            background: "#EFF6FF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 16px",
+          }}
+        >
+          <SpinnerIcon />
+        </div>
+        <h2 style={{ fontSize: "20px", fontWeight: 800, color: "#1E293B", margin: "0 0 6px" }}>
+          Generating optimized CV
+        </h2>
+        <p style={{ fontSize: "13px", color: "#64748B", margin: "0 0 22px" }}>
+          Template: {templateName}
+        </p>
+
+        <div style={{ display: "grid", gap: "10px", textAlign: "left" }}>
+          {generationSteps.map((step, i) => {
+            const isCompleted = i < currentStep;
+            const isActive = i === currentStep;
+
+            return (
+              <div
+                key={step}
+                className="cv-step-animate"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "11px 14px",
+                  borderRadius: "999px",
+                  background: isCompleted ? "#2563EB" : isActive ? "#DBEAFE" : "#F8FAFC",
+                  color: isCompleted ? "#fff" : isActive ? "#1D4ED8" : "#94A3B8",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                }}
+              >
+                <span
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "999px",
+                    background: isCompleted ? "rgba(255,255,255,0.2)" : "#fff",
+                    border: isActive ? "1px solid #93C5FD" : "1px solid transparent",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {isCompleted ? <CheckIcon /> : isActive ? <SpinnerIcon /> : i + 1}
+                </span>
+                {step}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Section Card ─── */
 function SectionCard({
   section,
@@ -226,12 +557,6 @@ function SectionCard({
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const scoreColor =
-    section.score >= 90
-      ? "#2563EB"
-      : section.score >= 70
-        ? "#F59E0B"
-        : "#EF4444";
 
   return (
     <div
@@ -263,11 +588,6 @@ function SectionCard({
           {section.title}
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span
-            style={{ fontSize: "13px", fontWeight: 700, color: scoreColor }}
-          >
-            SCORE {section.score}%
-          </span>
           <ChevronIcon open={open} />
         </div>
       </button>
@@ -359,9 +679,55 @@ function SectionCard({
 export default function CVResultPage({ onBack }: { onBack?: () => void }) {
   const jobFitScore = 76;
   const atsScore = 94;
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [isGeneratingCV, setIsGeneratingCV] = useState(false);
+  const [generationStep, setGenerationStep] = useState(0);
+  const [selectedTemplate, setSelectedTemplate] = useState<(typeof cvTemplates)[0] | null>(null);
+  const [generatedTemplateName, setGeneratedTemplateName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isGeneratingCV) return;
+
+    if (generationStep >= generationSteps.length) {
+      const timeout = setTimeout(() => {
+        setIsGeneratingCV(false);
+        setGenerationStep(0);
+        setGeneratedTemplateName(selectedTemplate?.name ?? null);
+      }, 700);
+
+      return () => clearTimeout(timeout);
+    }
+
+    const timeout = setTimeout(() => {
+      setGenerationStep((prev) => prev + 1);
+    }, 1400);
+
+    return () => clearTimeout(timeout);
+  }, [generationStep, isGeneratingCV, selectedTemplate]);
+
+  const handleChooseTemplate = (template: (typeof cvTemplates)[0]) => {
+    setSelectedTemplate(template);
+    setGeneratedTemplateName(null);
+    setShowTemplatePicker(false);
+    setGenerationStep(0);
+    setIsGeneratingCV(true);
+  };
 
   return (
     <div style={{ background: "#F8FAFC", minHeight: "100vh" }}>
+      {showTemplatePicker && (
+        <TemplatePickerModal
+          onClose={() => setShowTemplatePicker(false)}
+          onChoose={handleChooseTemplate}
+        />
+      )}
+      {isGeneratingCV && selectedTemplate && (
+        <CVGenerationOverlay
+          currentStep={generationStep}
+          templateName={selectedTemplate.name}
+        />
+      )}
+
       {/* ── Header ── */}
       <div style={{ textAlign: "center", padding: "32px 20px 12px" }}>
         <h1
@@ -840,11 +1206,34 @@ export default function CVResultPage({ onBack }: { onBack?: () => void }) {
             <div
               style={{
                 display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
                 justifyContent: "center",
+                gap: "12px",
                 marginTop: "28px",
               }}
             >
+              {generatedTemplateName && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "9px 14px",
+                    borderRadius: "999px",
+                    background: "#EFF6FF",
+                    color: "#1D4ED8",
+                    border: "1px solid #BFDBFE",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                  }}
+                >
+                  <CheckIcon />
+                  Optimized CV ready with {generatedTemplateName}
+                </div>
+              )}
               <button
+                onClick={() => setShowTemplatePicker(true)}
                 style={{
                   display: "flex",
                   alignItems: "center",

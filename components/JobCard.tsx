@@ -1,10 +1,24 @@
+"use client";
+
+import { useState, type MouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { APIError, createBookmark, deleteBookmark } from "@/lib/api";
 
 /* ─── SVG Icons ─── */
-function BookmarkIcon() {
+function BookmarkIcon({ active = false }: { active?: boolean }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill={active ? "#2563EB" : "none"}
+      stroke={active ? "#2563EB" : "#9CA3AF"}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
     </svg>
   );
@@ -113,7 +127,27 @@ export interface JobCardProps {
 }
 
 /* ─── Component ─── */
-export default function JobCard({ job }: { job: JobCardProps }) {
+export default function JobCard({
+  job,
+  defaultBookmarked = false,
+  bookmarkId: initialBookmarkId,
+  onBookmarkChange,
+}: {
+  job: JobCardProps;
+  defaultBookmarked?: boolean;
+  bookmarkId?: string;
+  onBookmarkChange?: (
+    jobId: string,
+    isBookmarked: boolean,
+    bookmarkId?: string,
+  ) => void;
+}) {
+  const router = useRouter();
+  const [isBookmarked, setIsBookmarked] = useState(defaultBookmarked);
+  const [bookmarkId, setBookmarkId] = useState(initialBookmarkId);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+  const [bookmarkError, setBookmarkError] = useState<string | null>(null);
+
   const empType = employmentTypeMap[job.employmentType] ?? { label: job.employmentType, color: "#6B7280" };
   const expLevel = experienceLevelMap[job.experienceLevel] ?? job.experienceLevel;
   const workType = workTypeMap[job.workType] ?? job.workType;
@@ -126,6 +160,42 @@ export default function JobCard({ job }: { job: JobCardProps }) {
     .join("")
     .substring(0, 3)
     .toUpperCase();
+
+  const handleBookmarkClick = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isBookmarkLoading) return;
+
+    setIsBookmarkLoading(true);
+    setBookmarkError(null);
+
+    try {
+      if (isBookmarked) {
+        setIsBookmarked(false);
+        await deleteBookmark(job.id);
+        setBookmarkId(undefined);
+        onBookmarkChange?.(job.id, false);
+        return;
+      }
+
+      const response = await createBookmark(job.id);
+      setIsBookmarked(true);
+      setBookmarkId(response.data.id);
+      onBookmarkChange?.(job.id, true, response.data.id);
+    } catch (error) {
+      if (error instanceof APIError && error.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      setBookmarkError(
+        error instanceof Error ? error.message : "Gagal memperbarui bookmark",
+      );
+    } finally {
+      setIsBookmarkLoading(false);
+    }
+  };
 
   return (
     <Link
@@ -161,10 +231,17 @@ export default function JobCard({ job }: { job: JobCardProps }) {
           </div>
         </div>
         <button
-          className="bg-transparent border-none cursor-pointer p-1 shrink-0"
-          onClick={(e) => e.preventDefault()}
+          type="button"
+          aria-label={isBookmarked ? "Hapus bookmark" : "Simpan lowongan"}
+          aria-pressed={isBookmarked}
+          title={bookmarkError ?? (isBookmarked ? "Hapus bookmark" : "Simpan lowongan")}
+          disabled={isBookmarkLoading}
+          className={`bg-transparent border-none cursor-pointer p-1 shrink-0 rounded-md transition-colors hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60 ${
+            bookmarkError ? "ring-1 ring-red-200" : ""
+          }`}
+          onClick={handleBookmarkClick}
         >
-          <BookmarkIcon />
+          <BookmarkIcon active={isBookmarked} />
         </button>
       </div>
 
