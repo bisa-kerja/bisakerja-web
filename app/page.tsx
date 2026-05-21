@@ -1,451 +1,337 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import JobCard from "@/components/JobCard";
-import {
-  APIError,
-  fetchBookmarks,
-  fetchJobs,
-  type APIJob,
-  type APIPagination,
-  type JobSearchParams,
-} from "@/lib/api";
+import heroImage from "@/public/assets/workspace.png";
+import analyzerImage from "@/public/assets/design-tool.png";
 
-/* ─── Icon Components ─── */
 function SearchIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   );
 }
 
-function ChevronDownIcon({ size = 14 }: { size?: number }) {
+function ArrowRightIcon() {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
     </svg>
   );
 }
 
-function SpinnerIcon() {
+function CheckIcon() {
   return (
-    <svg className="animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="10" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" opacity="0.25" />
-      <path d="M12 2a10 10 0 0 1 10 10" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m20 6-11 11-5-5" />
     </svg>
   );
 }
 
-/* ─── Data ─── */
-const filterOptions: { label: string; paramKey: keyof JobSearchParams; options: { label: string; value: string }[] }[] = [
+function BriefcaseIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+  );
+}
+
+function ChartIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3v18h18" />
+      <path d="m19 9-5 5-4-4-3 3" />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3z" />
+      <path d="m9 12 2 2 4-5" />
+    </svg>
+  );
+}
+
+const stats = [
+  { value: "10K+", label: "Lowongan aktif" },
+  { value: "800+", label: "Perusahaan mitra" },
+  { value: "92%", label: "Rekomendasi lebih relevan" },
+];
+
+const features = [
   {
-    label: "Tipe Kerja",
-    paramKey: "workType",
-    options: [
-      { label: "Semua", value: "" },
-      { label: "Remote", value: "REMOTE" },
-      { label: "Hybrid", value: "HYBRID" },
-      { label: "On-site", value: "ONSITE" },
-    ],
+    title: "Lowongan yang mudah disaring",
+    description: "Temukan pekerjaan berdasarkan posisi, tipe kerja, level pengalaman, dan urutan gaji tanpa membuka banyak tab.",
+    icon: <BriefcaseIcon />,
   },
   {
-    label: "Jenis",
-    paramKey: "employmentType",
-    options: [
-      { label: "Semua", value: "" },
-      { label: "Penuh Waktu", value: "FULL_TIME" },
-      { label: "Kontrak", value: "CONTRACT" },
-      { label: "Paruh Waktu", value: "PART_TIME" },
-      { label: "Magang", value: "INTERNSHIP" },
-    ],
+    title: "AI CV Analyzer",
+    description: "Unggah CV untuk melihat bagian yang perlu diperkuat, kata kunci yang hilang, dan rekomendasi peran yang cocok.",
+    icon: <ChartIcon />,
   },
   {
-    label: "Level",
-    paramKey: "experienceLevel",
-    options: [
-      { label: "Semua", value: "" },
-      { label: "Entry Level", value: "ENTRY_LEVEL" },
-      { label: "Mid Level", value: "MID_LEVEL" },
-      { label: "Senior Level", value: "SENIOR_LEVEL" },
-    ],
+    title: "Pencarian lebih pasti",
+    description: "Simpan lowongan, cek detail pekerjaan, lalu lanjutkan proses lamaran dengan informasi yang lebih lengkap.",
+    icon: <ShieldIcon />,
   },
 ];
 
-const sortOptions = [
-  { label: "Terbaru", value: "newest" },
-  { label: "Gaji Tertinggi", value: "salary_highest" },
-  { label: "Gaji Terendah", value: "salary_lowest" },
+const steps = [
+  "Cari lowongan yang sesuai dengan minat dan pengalamanmu.",
+  "Saring peluang berdasarkan tipe kerja, gaji, lokasi, dan level.",
+  "Periksa CV dengan AI agar lamaranmu lebih tajam.",
+  "Simpan pekerjaan terbaik dan lanjutkan proses apply.",
 ];
 
-/* ─── Main Page ─── */
+const jobCategories = [
+  "Software Engineer",
+  "Data Analyst",
+  "UI/UX Designer",
+  "Product Manager",
+  "Digital Marketing",
+  "Customer Success",
+];
+
+const testimonials = [
+  {
+    name: "Nadia Putri",
+    role: "Fresh Graduate",
+    quote: "Aku jadi tahu lowongan mana yang realistis buat entry-level, sekaligus bagian CV yang harus diperbaiki sebelum apply.",
+  },
+  {
+    name: "Arman Rizky",
+    role: "Frontend Developer",
+    quote: "Filter pekerjaannya rapi. Bisa langsung bandingin remote, hybrid, dan range gaji tanpa bolak-balik platform lain.",
+  },
+  {
+    name: "Sekar Ayu",
+    role: "Career Switcher",
+    quote: "AI CV Analyzer bantu banget buat nyambungin pengalaman lama ke role baru yang lebih relevan.",
+  },
+];
+
 export default function Home() {
-  const [jobs, setJobs] = useState<APIJob[]>([]);
-  const [pagination, setPagination] = useState<APIPagination | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [bookmarkByJobId, setBookmarkByJobId] = useState<Record<string, string>>(
-    {},
-  );
-
-  // Search & filter state
-  const [keyword, setKeyword] = useState("");
-  const [searchInput, setSearchInput] = useState("");
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [sort, setSort] = useState("newest");
-  const [page, setPage] = useState(1);
-
-  // Dropdown states
-  const [openFilter, setOpenFilter] = useState<string | null>(null);
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
-
-  const loadJobs = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const params: JobSearchParams = {
-        page,
-        limit: 20,
-        sort,
-      };
-      if (keyword) params.keyword = keyword;
-
-      // Apply active filters
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) {
-          (params as Record<string, unknown>)[key] = value;
-        }
-      });
-
-      const res = await fetchJobs(params);
-      setJobs(res.data);
-      setPagination(res.meta.pagination);
-    } catch {
-      setError("Gagal memuat lowongan kerja. Silakan coba lagi.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, keyword, filters, sort]);
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      loadJobs();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [loadJobs]);
-
-  const loadBookmarkIndex = useCallback(async () => {
-    try {
-      let bookmarkPage = 1;
-      let hasNextPage = true;
-      const nextBookmarkByJobId: Record<string, string> = {};
-
-      while (hasNextPage) {
-        const res = await fetchBookmarks({
-          page: bookmarkPage,
-          limit: 100,
-          sort: "created_desc",
-        });
-
-        res.data.forEach((bookmark) => {
-          nextBookmarkByJobId[bookmark.job.id] = bookmark.id;
-        });
-
-        hasNextPage = res.meta.pagination.hasNextPage;
-        bookmarkPage += 1;
-      }
-
-      setBookmarkByJobId(nextBookmarkByJobId);
-    } catch (err: unknown) {
-      if (err instanceof APIError && err.status === 401) {
-        setBookmarkByJobId({});
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      loadBookmarkIndex();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [loadBookmarkIndex]);
-
-  const handleBookmarkChange = (
-    jobId: string,
-    isBookmarked: boolean,
-    bookmarkId?: string,
-  ) => {
-    setBookmarkByJobId((current) => {
-      const next = { ...current };
-
-      if (isBookmarked && bookmarkId) {
-        next[jobId] = bookmarkId;
-      } else {
-        delete next[jobId];
-      }
-
-      return next;
-    });
-  };
-
-  const handleSearch = () => {
-    setKeyword(searchInput);
-    setPage(1);
-  };
-
-  const handleFilterChange = (paramKey: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [paramKey]: value }));
-    setPage(1);
-    setOpenFilter(null);
-  };
-
-  const handleSortChange = (value: string) => {
-    setSort(value);
-    setPage(1);
-    setShowSortDropdown(false);
-  };
-
-  const activeFilterCount = Object.values(filters).filter(Boolean).length;
-
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50" style={{ colorScheme: "light" }}>
+    <div className="flex min-h-screen flex-col bg-gray-50 text-gray-950" style={{ colorScheme: "light" }}>
       <Navbar />
 
-      {/* ─── Hero Section ─── */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400 py-14 px-8 text-center">
-        <h1 className="text-[28px] font-bold text-white leading-relaxed max-w-[1240px] mx-auto">
-          Cari Lowongan Kerja Pakai BisaKerja{" "}
-          <span className="text-yellow-300">#LebihPasti</span>
-        </h1>
-      </section>
+      <main className="flex-1">
+        <section className="overflow-hidden bg-white">
+          <div className="mx-auto grid w-full max-w-[1240px] grid-cols-1 items-center gap-10 px-6 py-12 md:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:py-16">
+            <div className="max-w-2xl">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700">
+                Platform karir untuk pencari kerja Indonesia
+              </div>
+              <h1 className="text-4xl font-bold leading-tight text-gray-950 sm:text-5xl lg:text-[58px]">
+                Cari kerja lebih fokus, dari CV sampai lowongan yang cocok.
+              </h1>
+              <p className="mt-5 max-w-xl text-base leading-7 text-gray-600 sm:text-lg">
+                BisaKerja membantu kamu menemukan lowongan relevan, memahami kualitas CV, dan mengambil keputusan apply dengan lebih percaya diri.
+              </p>
 
-      {/* ─── Search & Filters Section ─── */}
-      <section className="max-w-[1240px] mx-auto px-6 -mt-9 relative z-10 w-full">
-        {/* Search Card */}
-        <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] px-7 pt-6 pb-5">
-          {/* Search Bar */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 flex items-center border border-gray-200 rounded-[10px] pl-3.5 h-11 bg-white">
-              <input
-                type="text"
-                placeholder="Search by job title, company, & skills"
-                className="flex-1 border-none outline-none text-sm text-gray-900 bg-transparent placeholder:text-gray-400"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
-              />
-              <button
-                onClick={handleSearch}
-                className="w-16 h-full rounded-lg bg-blue-600 border-none cursor-pointer flex items-center justify-center text-white shrink-0 hover:bg-blue-700 transition-colors"
-              >
-                <SearchIcon />
-              </button>
-            </div>
-          </div>
-
-          {/* Filter Tags */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-wrap">
-              {filterOptions.map((filter) => (
-                <div key={filter.paramKey} className="relative">
-                  <button
-                    onClick={() => setOpenFilter(openFilter === filter.paramKey ? null : filter.paramKey)}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border text-[13px] font-medium cursor-pointer transition-colors ${
-                      filters[filter.paramKey]
-                        ? "border-blue-300 bg-blue-50 text-blue-700"
-                        : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    {filter.label}
-                    <ChevronDownIcon size={12} />
-                  </button>
-                  {openFilter === filter.paramKey && (
-                    <div className="absolute top-full mt-1 left-0 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 min-w-[140px]">
-                      {filter.options.map((opt) => (
-                        <button
-                          key={opt.value}
-                          onClick={() => handleFilterChange(filter.paramKey, opt.value)}
-                          className={`w-full px-3 py-2 text-left text-[13px] bg-transparent border-none cursor-pointer transition-colors ${
-                            filters[filter.paramKey] === opt.value
-                              ? "text-blue-600 bg-blue-50 font-medium"
-                              : "text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-              {activeFilterCount > 0 && (
-                <button
-                  onClick={() => { setFilters({}); setPage(1); }}
-                  className="px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 text-[13px] font-medium cursor-pointer hover:bg-red-100 transition-colors"
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/loker"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white no-underline transition-colors hover:bg-blue-700"
                 >
-                  Reset ({activeFilterCount})
-                </button>
-              )}
+                  <SearchIcon />
+                  Cari Lowongan
+                </Link>
+                <Link
+                  href="/ai-cv-analyzer"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-5 text-sm font-semibold text-blue-700 no-underline transition-colors hover:bg-blue-50"
+                >
+                  Analisis CV Gratis
+                  <ArrowRightIcon />
+                </Link>
+              </div>
+
+              <div className="mt-8 grid grid-cols-3 gap-3 border-t border-gray-100 pt-6">
+                {stats.map((item) => (
+                  <div key={item.label}>
+                    <p className="text-2xl font-bold text-gray-950">{item.value}</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">{item.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="relative shrink-0">
-              <button
-                onClick={() => setShowSortDropdown(!showSortDropdown)}
-                className="flex items-center gap-1.5 text-gray-500 bg-transparent border-none cursor-pointer p-0 text-[13px]"
-              >
-                <span>{sortOptions.find((s) => s.value === sort)?.label || "Terbaru"}</span>
-                <ChevronDownIcon size={12} />
-              </button>
-              {showSortDropdown && (
-                <div className="absolute top-full mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 min-w-[140px]">
-                  {sortOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => handleSortChange(opt.value)}
-                      className={`w-full px-3 py-2 text-left text-[13px] bg-transparent border-none cursor-pointer transition-colors ${
-                        sort === opt.value
-                          ? "text-blue-600 bg-blue-50 font-medium"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
+
+            <div className="relative min-h-[420px] overflow-hidden rounded-lg bg-blue-950">
+              <Image
+                src={heroImage}
+                alt="Pencari kerja menggunakan BisaKerja untuk mencari lowongan"
+                fill
+                priority
+                sizes="(min-width: 1024px) 560px, 100vw"
+                className="object-cover opacity-80"
+              />
+              <div className="absolute inset-x-5 bottom-5 rounded-lg bg-white p-5 shadow-[0_16px_48px_rgba(15,23,42,0.2)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500">Rekomendasi hari ini</p>
+                    <p className="mt-1 text-lg font-bold text-gray-950">Frontend Developer</p>
+                  </div>
+                  <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700">87% cocok</span>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {["Remote", "Full-time", "Entry Level"].map((tag) => (
+                    <span key={tag} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                      {tag}
+                    </span>
                   ))}
                 </div>
-              )}
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Results count */}
-        {pagination && !isLoading && (
-          <div className="flex items-center justify-between mt-5">
-            <p className="text-sm text-gray-500">
-              Menampilkan <span className="font-semibold text-gray-700">{jobs.length}</span> dari{" "}
-              <span className="font-semibold text-gray-700">{pagination.total.toLocaleString()}</span> lowongan
-              {keyword && (
-                <span>
-                  {" "}untuk &quot;<span className="text-blue-600 font-medium">{keyword}</span>&quot;
-                </span>
-              )}
-            </p>
+        <section className="border-y border-gray-200 bg-gray-50">
+          <div className="mx-auto grid w-full max-w-[1240px] grid-cols-2 gap-3 px-6 py-5 md:grid-cols-6 md:px-8">
+            {jobCategories.map((category) => (
+              <Link
+                key={category}
+                href="/loker"
+                className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-center text-sm font-semibold text-gray-700 no-underline transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              >
+                {category}
+              </Link>
+            ))}
           </div>
-        )}
-      </section>
+        </section>
 
-      {/* ─── Job Cards Grid ─── */}
-      <section className="max-w-[1240px] mx-auto px-6 pt-7 pb-12 w-full">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <SpinnerIcon />
-            <p className="text-sm text-gray-500">Memuat lowongan kerja...</p>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="15" y1="9" x2="9" y2="15" />
-                <line x1="9" y1="9" x2="15" y2="15" />
-              </svg>
+        <section className="bg-white px-6 py-14 md:px-8">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="max-w-2xl">
+              <p className="text-sm font-bold uppercase tracking-wide text-blue-600">Fitur utama</p>
+              <h2 className="mt-2 text-3xl font-bold text-gray-950 sm:text-4xl">Semua yang kamu butuhkan sebelum apply.</h2>
             </div>
-            <p className="text-sm text-gray-600">{error}</p>
-            <button
-              onClick={loadJobs}
-              className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium border-none cursor-pointer hover:bg-blue-700 transition-colors"
-            >
-              Coba Lagi
-            </button>
-          </div>
-        ) : jobs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </div>
-            <p className="text-sm text-gray-500">Tidak ada lowongan yang ditemukan.</p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
-              {jobs.map((job) => (
-                <JobCard
-                  key={`${job.id}-${bookmarkByJobId[job.id] ?? "unsaved"}`}
-                  job={job}
-                  defaultBookmarked={Boolean(bookmarkByJobId[job.id])}
-                  bookmarkId={bookmarkByJobId[job.id]}
-                  onBookmarkChange={handleBookmarkChange}
-                />
+            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+              {features.map((feature) => (
+                <article key={feature.title} className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    {feature.icon}
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold text-gray-950">{feature.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-gray-600">{feature.description}</p>
+                </article>
               ))}
             </div>
+          </div>
+        </section>
 
-            {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-10">
-                <button
-                  disabled={!pagination.hasPrevPage}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                >
-                  ← Sebelumnya
-                </button>
-                <div className="flex items-center gap-1">
-                  {/* Show page numbers */}
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    let pageNum: number;
-                    if (pagination.totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (page <= 3) {
-                      pageNum = i + 1;
-                    } else if (page >= pagination.totalPages - 2) {
-                      pageNum = pagination.totalPages - 4 + i;
-                    } else {
-                      pageNum = page - 2 + i;
-                    }
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`w-9 h-9 rounded-lg border text-sm font-medium cursor-pointer transition-colors ${
-                          page === pageNum
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  {pagination.totalPages > 5 && page < pagination.totalPages - 2 && (
-                    <>
-                      <span className="text-gray-400 px-1">...</span>
-                      <button
-                        onClick={() => setPage(pagination.totalPages)}
-                        className="w-9 h-9 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer hover:bg-gray-50 transition-colors"
-                      >
-                        {pagination.totalPages}
-                      </button>
-                    </>
-                  )}
+        <section className="bg-gray-50 px-6 py-14 md:px-8">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wide text-blue-600">Alur pencarian</p>
+              <h2 className="mt-2 text-3xl font-bold text-gray-950 sm:text-4xl">Dibuat untuk proses apply yang lebih terarah.</h2>
+              <p className="mt-4 text-base leading-7 text-gray-600">
+                Mulai dari eksplorasi lowongan sampai evaluasi CV, setiap langkah dibuat agar kamu tahu apa yang perlu dilakukan berikutnya.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {steps.map((step, index) => (
+                <div key={step} className="rounded-lg border border-gray-200 bg-white p-5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+                    {index + 1}
+                  </div>
+                  <p className="mt-4 text-sm font-semibold leading-6 text-gray-800">{step}</p>
                 </div>
-                <button
-                  disabled={!pagination.hasNextPage}
-                  onClick={() => setPage((p) => p + 1)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                >
-                  Selanjutnya →
-                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white px-6 py-14 md:px-8">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-10 lg:grid-cols-2 lg:items-center">
+            <div className="relative min-h-[360px] overflow-hidden rounded-lg bg-gray-100">
+              <Image
+                src={analyzerImage}
+                alt="Analisis CV dengan rekomendasi karir"
+                fill
+                sizes="(min-width: 1024px) 560px, 100vw"
+                className="object-cover"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wide text-blue-600">AI CV Analyzer</p>
+              <h2 className="mt-2 text-3xl font-bold text-gray-950 sm:text-4xl">Perbaiki CV sebelum peluang bagus lewat.</h2>
+              <p className="mt-4 text-base leading-7 text-gray-600">
+                Dapatkan penilaian menyeluruh untuk struktur CV, pengalaman, pencapaian, kata kunci, dan rekomendasi karir yang sesuai profilmu.
+              </p>
+              <div className="mt-6 grid gap-3">
+                {["Analisis bagian penting CV", "Saran kata kunci sesuai role", "Rekomendasi karir yang bisa ditindaklanjuti"].map((item) => (
+                  <div key={item} className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                      <CheckIcon />
+                    </span>
+                    {item}
+                  </div>
+                ))}
               </div>
-            )}
-          </>
-        )}
-      </section>
+              <Link
+                href="/ai-cv-analyzer"
+                className="mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white no-underline transition-colors hover:bg-blue-700"
+              >
+                Coba AI CV Analyzer
+                <ArrowRightIcon />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-gray-50 px-6 py-14 md:px-8">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+              <div className="max-w-2xl">
+                <p className="text-sm font-bold uppercase tracking-wide text-blue-600">Cerita pengguna</p>
+                <h2 className="mt-2 text-3xl font-bold text-gray-950 sm:text-4xl">Lebih siap saat memilih peluang.</h2>
+              </div>
+              <Link href="/register" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 text-sm font-semibold text-blue-700 no-underline hover:bg-blue-50">
+                Mulai Sekarang
+                <ArrowRightIcon />
+              </Link>
+            </div>
+            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+              {testimonials.map((testimonial) => (
+                <article key={testimonial.name} className="rounded-lg border border-gray-200 bg-white p-6">
+                  <p className="text-sm leading-7 text-gray-700">&quot;{testimonial.quote}&quot;</p>
+                  <div className="mt-6 border-t border-gray-100 pt-4">
+                    <p className="font-bold text-gray-950">{testimonial.name}</p>
+                    <p className="mt-1 text-sm text-gray-500">{testimonial.role}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-blue-600 px-6 py-14 md:px-8">
+          <div className="mx-auto flex max-w-[1240px] flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-bold text-white sm:text-4xl">Siap menemukan pekerjaan berikutnya?</h2>
+              <p className="mt-3 text-base leading-7 text-blue-50">
+                Jelajahi lowongan terbaru dan gunakan AI untuk membuat lamaranmu lebih kuat.
+              </p>
+            </div>
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+              <Link href="/loker" className="inline-flex h-12 items-center justify-center rounded-lg bg-white px-5 text-sm font-bold text-blue-700 no-underline hover:bg-blue-50">
+                Lihat Lowongan
+              </Link>
+              <Link href="/register" className="inline-flex h-12 items-center justify-center rounded-lg border border-blue-300 px-5 text-sm font-bold text-white no-underline hover:bg-blue-700">
+                Daftar Gratis
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
 
       <Footer />
     </div>

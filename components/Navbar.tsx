@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 
 const navLinks = [
-  { label: "Loker", href: "/" },
+  { label: "Loker", href: "/loker" },
   { label: "AI CV Analyzer", href: "/ai-cv-analyzer" },
 ];
 
@@ -56,22 +56,22 @@ export default function Navbar() {
   return (
     <nav className="flex items-center justify-between px-8 h-[60px] bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="flex items-center gap-8">
-        <Image
-          src={logo}
-          alt="Logo"
-          width={150}
-          height={150}
-        />
+        <a href="/">
+          <Image
+            src={logo}
+            alt="Logo"
+            width={150}
+            height={150}
+          />
+        </a>
         <div className="flex items-center gap-6">
           {navLinks.map((link, i) => (
             <a
               key={link.label}
               href={link.href}
-              className={`text-sm font-medium no-underline transition-colors duration-200 ${
-                i === 0
-                  ? "text-blue-600"
-                  : "text-gray-600 border-b-2 border-transparent hover:text-blue-600"
-              }`}
+              className={`text-sm font-medium no-underline transition-colors duration-200 
+                  text-gray-600 border-b-2 border-transparent hover:text-blue-600
+              `}
             >
               {link.label}
             </a>
