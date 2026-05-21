@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV Template 18 (Semantic CSS)</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --color-bg-page: #f3f4f6;
+        --color-bg-container: #ffffff;
+        --color-primary: #800080;
+        --color-text-primary: #000000;
+        --color-text-secondary: #374151; /* gray-700 */
+        --color-text-meta: #374151; /* gray-700 */
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--color-bg-page);
+        color: var(--color-text-secondary);
+        padding: 1rem;
+      }
+
+      .cv-container {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 56rem;
+        background-color: var(--color-bg-container);
+        padding: 3rem 2rem;
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      }
+
+      .cv-header {
+        margin-bottom: 2rem;
+        text-align: center;
+      }
+
+      .header-name {
+        margin-bottom: 0.5rem;
+        font-size: 3rem;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--color-primary);
+      }
+
+      .header-title {
+        margin-bottom: 1rem;
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        color: var(--color-text-primary);
+      }
+
+      .contact-info-1 {
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-secondary);
+      }
+
+      .contact-info-2 {
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-secondary);
+      }
+
+      .header-divider {
+        margin-bottom: 2rem;
+        height: 2px;
+        background-color: var(--color-primary);
+      }
+
+      .main-content-grid {
+        display: grid;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        gap: 2rem;
+      }
+
+      .cv-section {
+        margin-bottom: 2rem;
+      }
+      .cv-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-title {
+        margin-bottom: 1rem;
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--color-primary);
+      }
+
+      .summary-text {
+        text-align: justify;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        line-height: 1.625;
+        color: var(--color-text-secondary);
+      }
+
+      .job-entry,
+      .education-entry {
+        margin-bottom: 1.5rem;
+      }
+      .job-entry:last-child,
+      .education-entry:last-child {
+        margin-bottom: 0;
+      }
+
+      .job-title,
+      .education-title,
+      .certification-title {
+        margin-bottom: 0.25rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+      }
+
+      .job-meta,
+      .education-meta,
+      .certification-meta {
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-secondary);
+      }
+
+      .details-list {
+        margin-left: 1rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-secondary);
+      }
+      .details-list > * + * {
+        margin-top: 0.5rem;
+      }
+      .details-list li {
+        list-style-type: disc;
+      }
+
+      .skills-list {
+        margin-left: 1rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-secondary);
+      }
+      .skills-list > * + * {
+        margin-top: 0.5rem;
+      }
+      .skills-list li {
+        list-style-type: disc;
+      }
+
+      .certification-list > * + * {
+        margin-top: 1rem;
+      }
+
+      .text-justify {
+        text-align: justify;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: var(--color-bg-container);
+        }
+
+        .a4-container {
+          box-shadow: none;
+          margin: 0;
+          width: 100%;
+          border-radius: 0;
+          max-width: 100%;
+        }
+
+        .no-print {
+          display: none;
+        }
+
+        .print-bg {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+      }
+
+      @media (min-width: 768px) {
+        body {
+          padding: 2rem;
+        }
+
+        .main-content-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cv-container a4-container">
+      <header class="cv-header">
+        <h1 class="header-name">ALEX DOE</h1>
+        <p class="header-title">SENIOR FULL-STACK DEVELOPER</p>
+        <div class="contact-info-1">+1 (555) 123-4567 | alex.doe@email.com</div>
+        <div class="contact-info-2">San Francisco, CA | linkedin.com/in/alexdoe-dev</div>
+        <div class="header-divider print-bg"></div>
+      </header>
+      <main class="main-content-grid">
+        <div class="column-left">
+          <section class="cv-section summary-section">
+            <h2 class="section-title">PROFESSIONAL SUMMARY</h2>
+            <p class="summary-text text-justify">
+              A results-driven Senior Full-Stack Developer with over 7 years of experience in
+              research, development, and project management. Seeking opportunities to apply
+              technical skills and creative problem-solving abilities.
+            </p>
+          </section>
+          <section class="cv-section experience-section">
+            <h2 class="section-title">WORK EXPERIENCE</h2>
+            <div class="job-entry">
+              <p class="job-title">Senior Software Engineer | 2021-Present</p>
+              <p class="job-meta">Tech Solutions Inc.</p>
+              <ul class="details-list">
+                <li>
+                  Led the architecture of a new microservices-based e-commerce platform, increasing
+                  system scalability by 200%.
+                </li>
+                <li>
+                  Mentored a team of 4 junior developers, improving team productivity and code
+                  quality.
+                </li>
+                <li>Implemented a full CI/CD pipeline using GitHub Actions and Kubernetes.</li>
+              </ul>
+            </div>
+            <div class="job-entry">
+              <p class="job-title">Full-Stack Developer | 2018-2021</p>
+              <p class="job-meta">Innovate Co.</p>
+              <ul class="details-list">
+                <li>
+                  Developed and maintained full-stack web applications for various clients using the
+                  MERN stack.
+                </li>
+                <li>Managed application deployment and maintenance on AWS EC2 and S3.</li>
+              </ul>
+            </div>
+          </section>
+        </div>
+        <div class="column-right">
+          <section class="cv-section education-section">
+            <h2 class="section-title">ACADEMIC HISTORY</h2>
+            <div class="education-entry">
+              <p class="education-title">University of California, Berkeley | 2014-2018</p>
+              <p class="education-meta">B.Sc. in Computer Science</p>
+              <ul class="details-list">
+                <li>GPA: 3.9</li>
+                <li>Graduated with Honors</li>
+                <li>President, University Coding Club</li>
+              </ul>
+            </div>
+          </section>
+          <section class="cv-section skills-section">
+            <h2 class="section-title">SKILLS</h2>
+            <ul class="skills-list">
+              <li>Frontend: React, Next.js, TypeScript, Tailwind CSS</li>
+              <li>Backend: Node.js, Express, Laravel, PHP, PostgreSQL, MySQL</li>
+              <li>Infrastructure: Docker, Kubernetes, AWS, CI/CD (GitHub Actions)</li>
+              <li>Strong analytical and problem-solving abilities</li>
+              <li>Effective communication and teamwork skills</li>
+            </ul>
+          </section>
+          <section class="cv-section certification-section">
+            <h2 class="section-title">CERTIFICATIONS</h2>
+            <div class="certification-list">
+              <div class="certification-entry">
+                <p class="certification-title">AWS Certified Developer – Associate | 2022</p>
+                <p class="certification-meta">Amazon Web Services</p>
+              </div>
+              <div class="certification-entry">
+                <p class="certification-title">
+                  Certified Kubernetes Application Developer (CKAD) | 2023
+                </p>
+                <p class="certification-meta">The Linux Foundation</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

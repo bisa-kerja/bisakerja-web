@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV Template 9</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --color-bg-page: #f3f4f6;
+        --color-bg-sidebar: #1f2937; /* gray-800 */
+        --color-bg-main: #111827; /* gray-900 */
+        --color-text-light: #ffffff;
+        --color-text-muted-light: #d1d5db; /* gray-300 */
+        --color-text-muted-dark: #9ca3af; /* gray-400 */
+        --color-accent-gold: #d4af37;
+        --color-accent-yellow: #eab308; /* yellow-500 */
+        --color-gold-header-text: #2a2a2a;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--color-bg-page);
+        color: var(--color-text-light);
+        padding: 1rem;
+      }
+
+      .curved-top {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .curved-top::after {
+        content: "";
+        position: absolute;
+        top: -1px;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: var(--color-accent-gold);
+        border-radius: 0 0 0 100%;
+        z-index: 0;
+      }
+
+      .curved-bottom {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .curved-bottom::before {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: var(--color-accent-gold);
+        border-radius: 100% 0 0 0;
+        z-index: 0;
+      }
+
+      .section-title {
+        position: relative;
+        display: inline-block;
+        padding-bottom: 8px;
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+        font-weight: 700;
+        color: var(--color-text-light);
+        margin-bottom: 1rem;
+      }
+
+      .section-title::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--color-text-light);
+      }
+
+      .main-section .section-title {
+        margin-bottom: 1.5rem;
+      }
+
+      .gold-header {
+        background: var(--color-accent-gold);
+        color: var(--color-gold-header-text);
+        padding: 10px 16px;
+        font-weight: bold;
+        margin-bottom: 16px;
+      }
+
+      .profile-photo {
+        width: 200px;
+        height: 200px;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-bottom: 24px;
+      }
+
+      .contact-icon {
+        color: var(--color-accent-gold);
+        width: 24px;
+        margin-right: 12px;
+      }
+
+      .education-year {
+        color: var(--color-accent-gold);
+        font-weight: bold;
+        text-align: right;
+        margin-left: 1rem;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: var(--color-bg-main);
+        }
+        .cv-container {
+          box-shadow: none;
+          margin: 0;
+          width: 100%;
+          border-radius: 0;
+          max-width: 100%;
+        }
+        .sidebar,
+        .main-content,
+        .gold-header,
+        .curved-top {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+        .no-print {
+          display: none;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      ul {
+        list-style: none;
+      }
+
+      .cv-container {
+        max-width: 56rem;
+        margin-left: auto;
+        margin-right: auto;
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      }
+
+      .cv-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 100%;
+        background-color: var(--color-bg-sidebar);
+        padding: 2rem;
+        position: relative;
+        z-index: 10;
+      }
+
+      .sidebar-section {
+        margin-bottom: 2rem;
+      }
+
+      .skill-list,
+      .contact-list,
+      .social-list {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-muted-light);
+      }
+      .skill-list > * + *,
+      .contact-list > * + *,
+      .social-list > * + * {
+        margin-top: 1rem;
+      }
+
+      .skill-list p strong {
+        color: var(--color-text-light);
+      }
+
+      .contact-item,
+      .social-item {
+        display: flex;
+        align-items: center;
+      }
+
+      .main-content {
+        width: 100%;
+        background-color: var(--color-bg-main);
+        padding: 2rem;
+        position: relative;
+        z-index: 10;
+      }
+
+      .main-header {
+        margin-bottom: 3rem;
+      }
+
+      .main-name {
+        font-size: 3rem;
+        line-height: 1;
+        font-weight: 700;
+        color: var(--color-text-light);
+        margin-bottom: 0.5rem;
+      }
+
+      .main-title {
+        font-size: 1.5rem;
+        line-height: 2rem;
+        color: var(--color-accent-yellow);
+        font-style: italic;
+      }
+
+      .main-section {
+        margin-bottom: 3rem;
+      }
+
+      .about-text {
+        color: var(--color-text-muted-light);
+        text-align: justify;
+        line-height: 1.625;
+      }
+
+      .education-list > * + * {
+        margin-top: 1rem;
+      }
+
+      .education-entry {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .education-details {
+        flex: 1 1 0%;
+      }
+
+      .education-details-title {
+        color: var(--color-text-light);
+        font-weight: 700;
+      }
+
+      .education-details-school {
+        color: var(--color-text-muted-dark);
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+      }
+
+      .experience-list > * + * {
+        margin-top: 2rem;
+      }
+
+      .experience-job-title {
+        color: var(--color-text-light);
+        font-weight: 700;
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .experience-meta {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-muted-dark);
+        margin-bottom: 0.75rem;
+      }
+
+      .duties-list {
+        color: var(--color-text-muted-light);
+        margin-left: 1rem;
+      }
+      .duties-list > * + * {
+        margin-top: 0.5rem;
+      }
+
+      .duty-item {
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .duty-bullet {
+        color: var(--color-accent-yellow);
+        margin-right: 0.75rem;
+      }
+
+      @media (min-width: 768px) {
+        body {
+          padding: 2rem;
+        }
+        .cv-layout {
+          flex-direction: row;
+        }
+        .sidebar {
+          width: 33.333333%;
+        }
+        .main-content {
+          width: 66.666667%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cv-container curved-top">
+      <div class="cv-layout">
+        <aside class="sidebar">
+          <img
+            src="../../public/assets/images/random-picture.jpeg"
+            alt="Alex Doe"
+            class="profile-photo"
+            onerror="this.onerror=null;this.src='https://placehold.co/200x200/1f2937/d4af37?text=Gagal+Muat';"
+          />
+          <section class="sidebar-section">
+            <div class="gold-header">SKILLS</div>
+            <div class="skill-list">
+              <p>
+                <strong class="text-white">Frontend:</strong> React, Next.js, TypeScript, Tailwind
+                CSS
+              </p>
+              <p>
+                <strong class="text-white">Backend:</strong> Node.js, Express, Laravel, PostgreSQL,
+                MySQL
+              </p>
+              <p>
+                <strong class="text-white">Infrastructure:</strong> Docker, Kubernetes, AWS, CI/CD
+              </p>
+            </div>
+          </section>
+          <section class="sidebar-section">
+            <div class="gold-header">CONTACT</div>
+            <div class="contact-list">
+              <div class="contact-item">
+                <i class="fas fa-phone contact-icon"></i>
+                <div>+1 (555) 123-4567</div>
+              </div>
+              <div class="contact-item">
+                <i class="fas fa-envelope contact-icon"></i>
+                <div>alex.doe@email.com</div>
+              </div>
+              <div class="contact-item">
+                <i class="fas fa-map-marker-alt contact-icon"></i>
+                <div>San Francisco, CA</div>
+              </div>
+            </div>
+          </section>
+          <section class="sidebar-section">
+            <div class="gold-header">SOCIAL MEDIA</div>
+            <div class="social-list">
+              <div class="social-item">
+                <i class="fab fa-linkedin contact-icon"></i>
+                <div>linkedin.com/in/alexdoe-dev</div>
+              </div>
+              <div class="social-item">
+                <i class="fab fa-github contact-icon"></i>
+                <div>github.com/alexdoecode</div>
+              </div>
+            </div>
+          </section>
+        </aside>
+        <main class="main-content">
+          <header class="main-header">
+            <h1 class="main-name">ALEX DOE</h1>
+            <p class="main-title">Senior Full-Stack Developer</p>
+          </header>
+          <section class="main-section">
+            <h2 class="section-title">ABOUT ME</h2>
+            <p class="about-text">
+              A results-driven Senior Full-Stack Developer with over 7 years of experience. Proven
+              expertise in the entire development lifecycle, from concept to deployment. Adept at
+              leading development teams, architecting scalable solutions, and optimizing application
+              performance.
+            </p>
+          </section>
+          <section class="main-section">
+            <h2 class="section-title">EDUCATION</h2>
+            <div class="education-list">
+              <div class="education-entry">
+                <div class="education-details">
+                  <p class="education-details-title">B.Sc. in Computer Science</p>
+                  <p class="education-details-school">University of California, Berkeley</p>
+                </div>
+                <div class="education-year">2014-2018</div>
+              </div>
+            </div>
+          </section>
+          <section class="main-section">
+            <h2 class="section-title">WORK EXPERIENCE</h2>
+            <div class="experience-list">
+              <div class="experience-entry">
+                <h3 class="experience-job-title">Senior Software Engineer</h3>
+                <p class="experience-meta">Tech Solutions Inc.</p>
+                <ul class="duties-list">
+                  <li class="duty-item">
+                    <span class="duty-bullet">•</span>
+                    <span
+                      >Led the architecture of a new microservices-based e-commerce platform.</span
+                    >
+                  </li>
+                  <li class="duty-item">
+                    <span class="duty-bullet">•</span>
+                    <span
+                      >Mentored a team of 4 junior developers, improving team productivity.</span
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div class="experience-entry">
+                <h3 class="experience-job-title">Full-Stack Developer</h3>
+                <p class="experience-meta">Innovate Co.</p>
+                <ul class="duties-list">
+                  <li class="duty-item">
+                    <span class="duty-bullet">•</span>
+                    <span
+                      >Developed and maintained full-stack web applications using the MERN
+                      stack.</span
+                    >
+                  </li>
+                  <li class="duty-item">
+                    <span class="duty-bullet">•</span>
+                    <span>Managed application deployment and maintenance on AWS.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

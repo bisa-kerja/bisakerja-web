@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV Template 10</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --color-bg-page: #cdcbcb;
+        --color-bg-container: #f5f1e8;
+        --color-text-dark: #000000;
+        --color-text-body: #333;
+        --color-text-body-light: #1f2937; /* gray-800 */
+        --color-text-meta: #666;
+        --color-text-meta-dark: #374151; /* gray-700 */
+        --color-text-heading: #4b5563; /* gray-600 */
+        --color-text-title: #374151; /* gray-700 */
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--color-bg-page);
+        padding: 1rem;
+      }
+
+      .section-container {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .section-label {
+        flex-shrink: 0;
+        width: 140px;
+        font-weight: 700;
+        font-size: 0.875rem; /* 14px */
+        letter-spacing: 0.05em;
+        color: var(--color-text-dark);
+        padding-top: 0.25rem;
+        border-right: 2px solid var(--color-text-dark);
+        padding-right: 2rem;
+        text-transform: uppercase;
+      }
+
+      .section-content {
+        flex: 1;
+        text-align: justify;
+      }
+
+      .job-entry:not(:last-child) {
+        margin-bottom: 1.5rem;
+      }
+
+      .job-title {
+        font-weight: 600;
+        color: var(--color-text-dark);
+        margin-bottom: 0.25rem;
+      }
+
+      .job-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem; /* 14px */
+        color: var(--color-text-meta);
+        margin-bottom: 0.75rem;
+      }
+
+      .job-meta-date {
+        color: var(--color-text-meta-dark);
+      }
+
+      .job-description ul {
+        list-style-type: disc;
+        list-style-position: outside;
+        margin-left: 1rem;
+        font-size: 0.95rem; /* 15px */
+        color: var(--color-text-body);
+        line-height: 1.6;
+      }
+
+      .job-description li {
+        margin-bottom: 0.5rem;
+      }
+
+      .degree-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem; /* 14px */
+        color: var(--color-text-meta);
+        margin-bottom: 0.25rem;
+      }
+
+      .degree-meta-date {
+        color: var(--color-text-meta-dark);
+      }
+
+      .degree-title {
+        font-weight: 600;
+        color: var(--color-text-dark);
+      }
+
+      .education-school {
+        color: var(--color-text-body-light);
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+      }
+
+      .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+
+      .skills-grid ul {
+        list-style-position: inside;
+        list-style-type: disc;
+      }
+
+      .skills-grid li {
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+        color: var(--color-text-body);
+      }
+
+      .divider {
+        height: 2px;
+        background-color: var(--color-text-dark);
+        margin: 1.5rem 0;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: var(--color-bg-container);
+        }
+        .cv-container {
+          box-shadow: none;
+          margin: 0;
+          width: 100%;
+          border-radius: 0;
+          max-width: 100%;
+        }
+        .no-print {
+          display: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .section-container {
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .section-label {
+          width: 100%;
+          border-right: none;
+          border-bottom: 2px solid var(--color-text-dark);
+          padding-right: 0;
+          padding-bottom: 0.5rem;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .cv-container {
+        max-width: 56rem;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 3rem 2rem;
+        background-color: var(--color-bg-container);
+      }
+
+      .cv-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .header-name {
+        font-size: 38px;
+        font-weight: 700;
+        color: var(--color-text-dark);
+        margin-bottom: 0.5rem;
+      }
+
+      .header-title {
+        font-size: 1.125rem;
+        line-height: 1.75rem;
+        color: var(--color-text-title);
+        margin-bottom: 0.5rem;
+      }
+
+      .header-contact {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--color-text-heading);
+      }
+
+      .summary-text {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        line-height: 1.625;
+        color: var(--color-text-body-light);
+      }
+
+      @media (min-width: 768px) {
+        body {
+          padding: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cv-container">
+      <header class="cv-header">
+        <h1 class="header-name">ALEX DOE</h1>
+        <p class="header-title">Senior Full-Stack Developer</p>
+        <p class="header-contact">alex.doe@email.com | +1 (555) 123-4567 | San Francisco, CA</p>
+      </header>
+      <div class="divider"></div>
+      <section class="section-container">
+        <h2 class="section-label">SUMMARY</h2>
+        <div class="section-content">
+          <p class="summary-text">
+            A results-driven Senior Full-Stack Developer with over 7 years of experience. Proven
+            expertise in the entire development lifecycle, from concept to deployment. Adept at
+            leading development teams, architecting scalable solutions, and optimizing application
+            performance.
+          </p>
+        </div>
+      </section>
+      <section class="section-container">
+        <h2 class="section-label">WORK EXPERIENCE</h2>
+        <div class="section-content">
+          <div class="job-entry">
+            <div class="job-title">Senior Software Engineer, Tech Solutions Inc.</div>
+            <div class="job-meta">
+              <span></span>
+              <span class="job-meta-date">June 2021 – Present</span>
+            </div>
+            <div class="job-description">
+              <ul>
+                <li>
+                  Led the architecture of a new microservices-based e-commerce platform, increasing
+                  system scalability by 200%.
+                </li>
+                <li>
+                  Mentored a team of 4 junior developers, improving team productivity and code
+                  quality.
+                </li>
+                <li>
+                  Implemented a full CI/CD pipeline using GitHub Actions and Kubernetes, reducing
+                  deployment time by 75%.
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="job-entry">
+            <div class="job-title">Full-Stack Developer, Innovate Co.</div>
+            <div class="job-meta">
+              <span></span>
+              <span class="job-meta-date">May 2018 – June 2021</span>
+            </div>
+            <div class="job-description">
+              <ul>
+                <li>
+                  Developed and maintained full-stack web applications for various clients using the
+                  MERN stack.
+                </li>
+                <li>
+                  Translated complex client requirements into functional and user-friendly features.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section-container">
+        <h2 class="section-label">EDUCATION</h2>
+        <div class="section-content">
+          <div class="education-entry">
+            <div class="degree-meta">
+              <span class="degree-title">B.Sc. in Computer Science</span>
+              <span class="degree-meta-date">2014 – 2018</span>
+            </div>
+            <p class="education-school">University of California, Berkeley</p>
+          </div>
+        </div>
+      </section>
+      <section class="section-container">
+        <h2 class="section-label">PROJECTS</h2>
+        <div class="section-content">
+          <div class="job-entry">
+            <div class="job-title">TaskFlow Pro - Project Management Tool</div>
+            <div class="job-description">
+              <ul>
+                <li>
+                  A full-stack project management app with Kanban boards and real-time collaboration
+                  via WebSockets. Built with Next.js, Express, and PostgreSQL.
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="job-entry">
+            <div class="job-title">CodeVerse - Developer Forum</div>
+            <div class="job-description">
+              <ul>
+                <li>
+                  A community forum for developers. Built with Laravel and Livewire, featuring rich
+                  text editing and a reputation system based on user activity.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section-container">
+        <h2 class="section-label">KEY SKILLS</h2>
+        <div class="section-content">
+          <div class="skills-grid">
+            <ul>
+              <li>React & Next.js</li>
+              <li>TypeScript</li>
+              <li>Node.js & Express</li>
+              <li>PostgreSQL & MySQL</li>
+            </ul>
+            <ul>
+              <li>Docker & Kubernetes</li>
+              <li>CI/CD (GitHub Actions)</li>
+              <li>Cloud (AWS)</li>
+              <li>Agile Methodologies</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

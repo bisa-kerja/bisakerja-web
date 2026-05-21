@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV Template 11</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --color-bg-page: #f3f4f6;
+        --color-bg-container: #ffffff;
+        --color-text-primary: #000000;
+        --color-text-body: #333333;
+        --color-text-meta: #666666;
+        --color-divider: #000000;
+        --color-profile-bg: #3a3a3a;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--color-bg-page);
+        color: var(--color-text-primary);
+        padding: 1rem;
+      }
+
+      @media (min-width: 768px) {
+        body {
+          padding: 2rem;
+        }
+      }
+
+      .cv-container {
+        max-width: 900px;
+        background-color: var(--color-bg-container);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-left: auto;
+        margin-right: auto;
+        padding: 3rem 2rem;
+      }
+
+      .header-section {
+        display: flex;
+        gap: 40px;
+        margin-bottom: 60px;
+        align-items: flex-start;
+      }
+
+      .profile-photo {
+        width: 180px;
+        height: 220px;
+        background-color: var(--color-profile-bg);
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+
+      .profile-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale(100%);
+      }
+
+      .header-content h1 {
+        font-size: 72px;
+        font-weight: 700;
+        line-height: 1.1;
+        margin: 0;
+        letter-spacing: -2px;
+      }
+
+      .section-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .divider {
+        height: 2px;
+        background-color: var(--color-divider);
+        margin: 30px 0;
+      }
+
+      .job-entry {
+        margin-bottom: 30px;
+      }
+
+      .job-entry:last-child {
+        margin-bottom: 0;
+      }
+
+      .job-title {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      .job-description {
+        color: var(--color-text-body);
+        line-height: 1.6;
+        text-align: justify;
+      }
+      .job-description ul {
+        list-style-type: disc;
+        list-style-position: outside;
+        padding-left: 20px;
+        margin-top: 10px;
+      }
+
+      .two-column-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-top: 40px;
+      }
+
+      .column-divider {
+        border-left: 2px solid var(--color-divider);
+        padding-left: 40px;
+      }
+
+      .education-item {
+        margin-bottom: 20px;
+      }
+
+      .education-title {
+        font-weight: 700;
+        font-size: 15px;
+      }
+
+      .education-subtitle {
+        color: var(--color-text-meta);
+        font-size: 14px;
+      }
+
+      .contact-item {
+        margin-bottom: 12px;
+        font-size: 14px;
+      }
+
+      .skill-category {
+        margin-bottom: 25px;
+      }
+
+      .skill-category:last-child {
+        margin-bottom: 0;
+      }
+
+      .skill-category-title {
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 12px;
+      }
+
+      .skill-list {
+        list-style: disc;
+        padding-left: 20px;
+      }
+
+      .skill-list li {
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: var(--color-text-body);
+      }
+
+      .about-text {
+        text-align: justify;
+        line-height: 1.7;
+        color: var(--color-text-body);
+        font-size: 15px;
+      }
+
+      .section-education {
+        margin-top: 40px;
+      }
+
+      .skills-title {
+        margin-top: 0;
+      }
+
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: var(--color-bg-container);
+        }
+
+        .a4-container {
+          box-shadow: none;
+          margin: 0;
+          width: 100%;
+          border-radius: 0;
+          max-width: 100%;
+        }
+
+        .no-print {
+          display: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .cv-container {
+          padding: 40px 20px;
+        }
+
+        .header-section {
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .profile-photo {
+          width: 150px;
+          height: 180px;
+        }
+
+        .header-content h1 {
+          font-size: 48px;
+        }
+
+        .two-column-section {
+          grid-template-columns: 1fr;
+          gap: 30px;
+        }
+
+        .column-divider {
+          border-left: none;
+          border-top: 2px solid var(--color-divider);
+          padding-left: 0;
+          padding-top: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cv-container a4-container">
+      <div class="header-section">
+        <div class="profile-photo">
+          <img
+            src="../../public/assets/images/random-picture.jpeg"
+            alt="Alex Doe"
+            onerror="this.onerror=null;this.src='https://placehold.co/180x220/3a3a3a/ffffff?text=Gagal+Muat';"
+          />
+        </div>
+        <div class="header-content">
+          <h1>Alex<br />Doe.</h1>
+        </div>
+      </div>
+      <div>
+        <h2 class="section-title">About Me</h2>
+        <p class="about-text">
+          A results-driven Senior Full-Stack Developer with over 7 years of experience. Proven
+          expertise in the entire development lifecycle, from concept to deployment. Adept at
+          leading development teams, architecting scalable solutions, and optimizing application
+          performance. Passionate about building clean, maintainable code.
+        </p>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <h2 class="section-title">Experience</h2>
+        <div class="job-entry">
+          <div class="job-title">
+            Senior Software Engineer | Tech Solutions Inc. (June 2021 – Present)
+          </div>
+          <p class="job-description">
+            Led the architecture of a new microservices-based e-commerce platform and mentored a
+            team of 4 junior developers.
+          </p>
+          <ul>
+            <li>Increased system scalability by 200% through microservices implementation.</li>
+            <li>Reduced deployment time by 75% by implementing a full CI/CD pipeline.</li>
+          </ul>
+        </div>
+        <div class="job-entry">
+          <div class="job-title">Full-Stack Developer | Innovate Co. (May 2018 – June 2021)</div>
+          <p class="job-description">
+            Developed and maintained full-stack web applications for various clients using the MERN
+            stack.
+          </p>
+          <ul>
+            <li>
+              Translated complex client requirements into functional and user-friendly features.
+            </li>
+            <li>Managed application deployment and maintenance on AWS EC2 and S3.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="two-column-section">
+        <div>
+          <div>
+            <h2 class="section-title">Education</h2>
+            <div class="education-item">
+              <div class="education-title">B.Sc. in Computer Science (2014 – 2018)</div>
+              <div class="education-subtitle">University of California, Berkeley</div>
+            </div>
+          </div>
+          <div class="section-education">
+            <h2 class="section-title">Contact</h2>
+            <div class="contact-item">+1 (555) 123-4567</div>
+            <div class="contact-item">alex.doe@email.com</div>
+            <div class="contact-item">San Francisco, CA</div>
+            <div class="contact-item">linkedin.com/in/alexdoe-dev</div>
+          </div>
+        </div>
+        <div class="column-divider">
+          <h2 class="section-title skills-title">Skills</h2>
+          <div class="skill-category">
+            <div class="skill-category-title">Frontend:</div>
+            <ul class="skill-list">
+              <li>React & Next.js</li>
+              <li>TypeScript</li>
+              <li>Tailwind CSS</li>
+              <li>HTML5 & CSS3</li>
+            </ul>
+          </div>
+          <div class="skill-category">
+            <div class="skill-category-title">Backend:</div>
+            <ul class="skill-list">
+              <li>Node.js & Express</li>
+              <li>Laravel & PHP</li>
+              <li>PostgreSQL & MySQL</li>
+            </ul>
+          </div>
+          <div class="skill-category">
+            <div class="skill-category-title">Infrastructure:</div>
+            <ul class="skill-list">
+              <li>Docker & Kubernetes</li>
+              <li>AWS</li>
+              <li>CI/CD (GitHub Actions)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

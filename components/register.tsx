@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { registerUser, APIError } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 /* ─── SVG Icons ─── */
 function EyeOffIcon() {
@@ -46,16 +48,28 @@ function EyeIcon() {
   );
 }
 
+function SpinnerIcon() {
+  return (
+    <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.25" />
+      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 
 export default function RegisterStep1() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const router = useRouter();
+  const { login } = useAuth();
 
   type FormData = {
     username: string;
     email: string;
-    phone: string;
+    phoneNumber: string;
     password: string;
     confirmPassword: string;
     terms: boolean;
@@ -70,9 +84,51 @@ export default function RegisterStep1() {
 
   const passwordValue = watch("password");
 
-  const onSubmit = () => {
-    router.push("/register/onboarding/upload-cv");
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    setApiError(null);
+    try {
+      const res = await registerUser({
+        username: data.username,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+      });
+      if (res.success && res.data) {
+        // Auto-login after registration
+        login(res.data);
+        router.push("/register/onboarding/upload-cv");
+      } else {
+        setApiError(res.message || "Registration failed. Please try again.");
+      }
+    } catch (err) {
+      if (err instanceof APIError) {
+        // Handle specific validation errors
+        if (err.details) {
+          if (Array.isArray(err.details) && err.details.length > 0) {
+            setApiError(err.details[0].message || err.message);
+          } else {
+            const fieldErrors = Object.values(err.details).flat();
+            if (fieldErrors.length > 0) {
+              const firstError = fieldErrors[0];
+              setApiError(typeof firstError === 'string' ? firstError : (firstError as any).message || err.message);
+            } else {
+              setApiError(err.message);
+            }
+          }
+        } else {
+          setApiError(err.message);
+        }
+      } else {
+        setApiError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  console.log(apiError)
 
   return (
     <div className="flex min-h-screen bg-white text-gray-900" style={{ colorScheme: "light" }}>
@@ -133,6 +189,18 @@ export default function RegisterStep1() {
             Let&apos;s set up your foundational details for your mentor profile.
           </p>
 
+          {/* API Error */}
+          {apiError && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5 text-red-500">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              <span>{apiError}</span>
+            </div>
+          )}
+
           <form className="flex flex-col gap-[18px]" onSubmit={handleSubmit(onSubmit)}>
             {/* Username */}
             <div className="flex flex-col gap-1.5">
@@ -145,6 +213,7 @@ export default function RegisterStep1() {
                   type="text"
                   className={`w-full h-11 px-3.5 border rounded-lg text-sm text-gray-900 bg-white outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-[3px] ${errors.username ? "border-red-500 focus:border-red-500 focus:ring-red-500/[0.08]" : "border-gray-300 focus:border-[#2B7FE0] focus:ring-[#2B7FE0]/[0.08]"}`}
                   placeholder="e.g. creative_director_jane"
+                  disabled={isSubmitting}
                   {...register("username", {
                     required: "Username is required",
                     minLength: { value: 3, message: "Username must be at least 3 characters" },
@@ -166,6 +235,7 @@ export default function RegisterStep1() {
                     type="email"
                     className={`w-full h-11 px-3.5 border rounded-lg text-sm text-gray-900 bg-white outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-[3px] ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500/[0.08]" : "border-gray-300 focus:border-[#2B7FE0] focus:ring-[#2B7FE0]/[0.08]"}`}
                     placeholder="jane@studio.com"
+                    disabled={isSubmitting}
                     {...register("email", {
                       required: "Email is required",
                       pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email address" },
@@ -175,22 +245,23 @@ export default function RegisterStep1() {
                 {errors.email && <p className="text-xs text-red-500 mt-0.5">{errors.email.message}</p>}
               </div>
               <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                <label htmlFor="phone" className="text-[13px] font-semibold text-gray-900">
+                <label htmlFor="phoneNumber" className="text-[13px] font-semibold text-gray-900">
                   Phone Number
                 </label>
                 <div className="relative flex items-center">
                   <input
-                    id="phone"
+                    id="phoneNumber"
                     type="tel"
-                    className={`w-full h-11 px-3.5 border rounded-lg text-sm text-gray-900 bg-white outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-[3px] ${errors.phone ? "border-red-500 focus:border-red-500 focus:ring-red-500/[0.08]" : "border-gray-300 focus:border-[#2B7FE0] focus:ring-[#2B7FE0]/[0.08]"}`}
-                    placeholder="+1 (555) 000-0000"
-                    {...register("phone", {
+                    className={`w-full h-11 px-3.5 border rounded-lg text-sm text-gray-900 bg-white outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-[3px] ${errors.phoneNumber ? "border-red-500 focus:border-red-500 focus:ring-red-500/[0.08]" : "border-gray-300 focus:border-[#2B7FE0] focus:ring-[#2B7FE0]/[0.08]"}`}
+                    placeholder="6281234567890"
+                    disabled={isSubmitting}
+                    {...register("phoneNumber", {
                       required: "Phone number is required",
-                      pattern: { value: /^[+]?[\d\s()-]{7,20}$/, message: "Enter a valid phone number" },
+                      pattern: { value: /^(\+62|62|0)8[1-9][0-9]{6,11}$/, message: "Phone number must be an Indonesian number" },
                     })}
                   />
                 </div>
-                {errors.phone && <p className="text-xs text-red-500 mt-0.5">{errors.phone.message}</p>}
+                {errors.phoneNumber && <p className="text-xs text-red-500 mt-0.5">{errors.phoneNumber.message}</p>}
               </div>
             </div>
 
@@ -206,9 +277,15 @@ export default function RegisterStep1() {
                     type={showPassword ? "text" : "password"}
                     className={`w-full h-11 px-3.5 pr-10 border rounded-lg text-sm text-gray-900 bg-white outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-[3px] ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500/[0.08]" : "border-gray-300 focus:border-[#2B7FE0] focus:ring-[#2B7FE0]/[0.08]"}`}
                     placeholder="••••••••"
+                    disabled={isSubmitting}
                     {...register("password", {
                       required: "Password is required",
-                      minLength: { value: 8, message: "Password must be at least 8 characters" },
+                      minLength: { value: 12, message: "Password must be at least 12 characters" },
+                      validate: {
+                        hasLowerCase: (value) => /[a-z]/.test(value) || "Password must contain a lowercase letter",
+                        hasUpperCase: (value) => /[A-Z]/.test(value) || "Password must contain an uppercase letter",
+                        hasSymbol: (value) => /[^a-zA-Z0-9]/.test(value) || "Password must contain a symbol",
+                      }
                     })}
                   />
                   <button
@@ -232,6 +309,7 @@ export default function RegisterStep1() {
                     type={showConfirmPassword ? "text" : "password"}
                     className={`w-full h-11 px-3.5 pr-10 border rounded-lg text-sm text-gray-900 bg-white outline-none transition-all duration-200 placeholder:text-gray-400 focus:ring-[3px] ${errors.confirmPassword ? "border-red-500 focus:border-red-500 focus:ring-red-500/[0.08]" : "border-gray-300 focus:border-[#2B7FE0] focus:ring-[#2B7FE0]/[0.08]"}`}
                     placeholder="••••••••"
+                    disabled={isSubmitting}
                     {...register("confirmPassword", {
                       required: "Please confirm your password",
                       validate: (value) => value === passwordValue || "Passwords do not match",
@@ -279,9 +357,17 @@ export default function RegisterStep1() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full h-12 border-none rounded-[10px] bg-[#2B7FE0] text-white text-[15px] font-semibold cursor-pointer flex items-center justify-center gap-2 mt-2.5 transition-all duration-200 hover:bg-[#2470c9] active:scale-[0.99] group"
+              disabled={isSubmitting}
+              className="w-full h-12 border-none rounded-[10px] bg-[#2B7FE0] text-white text-[15px] font-semibold cursor-pointer flex items-center justify-center gap-2 mt-2.5 transition-all duration-200 hover:bg-[#2470c9] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed group"
             >
-             Register
+              {isSubmitting ? (
+                <>
+                  <SpinnerIcon />
+                  Creating account...
+                </>
+              ) : (
+                "Register"
+              )}
             </button>
           </form>
 

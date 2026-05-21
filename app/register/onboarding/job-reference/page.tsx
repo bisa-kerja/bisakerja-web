@@ -1,12 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { updatePreferences, PreferencesUpsertRequest } from "@/lib/api";
 
 /* ─── Icons ─── */
 function GraduationCapIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
       <path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5" />
     </svg>
@@ -15,7 +26,17 @@ function GraduationCapIcon() {
 
 function BriefcaseIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
     </svg>
@@ -24,7 +45,17 @@ function BriefcaseIcon() {
 
 function SwitchIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="17 1 21 5 17 9" />
       <path d="M3 11V9a4 4 0 0 1 4-4h14" />
       <polyline points="7 23 3 19 7 15" />
@@ -35,7 +66,17 @@ function SwitchIcon() {
 
 function SearchIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
@@ -44,7 +85,17 @@ function SearchIcon() {
 
 function CloseSmallIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
@@ -53,42 +104,157 @@ function CloseSmallIcon() {
 
 function ChevronDownIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+function SpinnerIcon() {
+  return (
+    <svg
+      className="animate-spin"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        opacity="0.25"
+      />
+      <path
+        d="M12 2a10 10 0 0 1 10 10"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 /* ─── Data ─── */
 const careerStages = [
-  { id: "fresh", label: "Fresh Graduate", sub: "0-1 years exp", icon: "graduation" },
-  { id: "early", label: "Early Career", sub: "1-3 years exp", icon: "briefcase" },
-  { id: "switcher", label: "Career Switcher", sub: "Changing paths", icon: "switch" },
+  {
+    id: "fresh",
+    label: "Fresh Graduate",
+    sub: "0-1 years exp",
+    icon: "graduation",
+  },
+  {
+    id: "early",
+    label: "Early Career",
+    sub: "1-3 years exp",
+    icon: "briefcase",
+  },
+  {
+    id: "switcher",
+    label: "Career Switcher",
+    sub: "Changing paths",
+    icon: "switch",
+  },
 ];
 
-const jobStatuses = ["Immediate Start", "Within 1 Month", "Within 3 Months", "Just Looking"];
+const jobStatuses = [
+  "Immediate Start",
+  "Within 1 Month",
+  "Within 3 Months",
+  "Just Looking",
+];
 
-const suggestedRoles = ["Product Manager", "Visual Designer"];
+const suggestedRoles = ["Product Manager", "Visual Designer", "Software Engineer", "Data Analyst", "Marketing Specialist", "Project Manager"];
 
 const workArrangements = ["Hybrid", "Remote", "On-site"];
 
 export default function JobReferencePage() {
-  const [selectedStage, setSelectedStage] = useState("early");
-  const [selectedStatus, setSelectedStatus] = useState("Within 3 Months");
-  const [targetRoles, setTargetRoles] = useState(["Product Designer", "UX Researcher"]);
+  const [selectedStage, setSelectedStage] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [targetRoles, setTargetRoles] = useState<string[]>([]);
   const [roleSearch, setRoleSearch] = useState("");
-  const [province, setProvince] = useState("Ontario");
-  const [city, setCity] = useState("Toronto");
-  const [selectedArrangements, setSelectedArrangements] = useState(["Hybrid", "Remote"]);
+  const [province, setProvince] = useState("");
+  const [city, setCity] = useState("");
+  const [selectedProvinceId, setSelectedProvinceId] = useState("");
+  const [provinces, setProvinces] = useState<{ id: string; name: string }[]>(
+    [],
+  );
+  const [cities, setCities] = useState<
+    { id: string; province_id: string; name: string }[]
+  >([]);
+  const [isLoadingProvinces, setIsLoadingProvinces] = useState(false);
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
+  const [selectedArrangements, setSelectedArrangements] = useState([""]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const router = useRouter();
+
+  // Fetch all Indonesian provinces from the official wilayah API on mount
+  useEffect(() => {
+    setIsLoadingProvinces(true);
+    fetch("/api/wilayah/provinces")
+      .then((res) => res.json())
+      .then((data: { id: string; name: string }[]) => {
+        setProvinces(data);
+        const defaultProvince = data.find((p) => p.id === "31"); // DKI JAKARTA
+        if (defaultProvince) setProvince(defaultProvince.name);
+      })
+      .catch((err) => console.error("Failed to fetch provinces:", err))
+      .finally(() => setIsLoadingProvinces(false));
+  }, []);
+
+  // Fetch cities/regencies whenever the selected province ID changes
+  useEffect(() => {
+    if (!selectedProvinceId) return;
+    setIsLoadingCities(true);
+    setCities([]);
+    setCity("");
+    fetch(`/api/wilayah/regencies/${selectedProvinceId}`)
+      .then((res) => res.json())
+      .then((data: { id: string; province_id: string; name: string }[]) => {
+        setCities(data);
+        if (data.length > 0) setCity(data[0].name);
+      })
+      .catch((err) => console.error("Failed to fetch cities:", err))
+      .finally(() => setIsLoadingCities(false));
+  }, [selectedProvinceId]);
 
   const stageIcon = (type: string, isActive: boolean) => {
     const color = isActive ? "text-white" : "text-gray-400";
     switch (type) {
-      case "graduation": return <span className={color}><GraduationCapIcon /></span>;
-      case "briefcase": return <span className={color}><BriefcaseIcon /></span>;
-      case "switch": return <span className={color}><SwitchIcon /></span>;
-      default: return null;
+      case "graduation":
+        return (
+          <span className={color}>
+            <GraduationCapIcon />
+          </span>
+        );
+      case "briefcase":
+        return (
+          <span className={color}>
+            <BriefcaseIcon />
+          </span>
+        );
+      case "switch":
+        return (
+          <span className={color}>
+            <SwitchIcon />
+          </span>
+        );
+      default:
+        return null;
     }
   };
 
@@ -114,17 +280,51 @@ export default function JobReferencePage() {
     setSelectedArrangements((prev) =>
       prev.includes(arrangement)
         ? prev.filter((a) => a !== arrangement)
-        : [...prev, arrangement]
+        : [...prev, arrangement],
     );
   };
 
-  const HandleBackStep= () => {
+  const HandleBackStep = () => {
     router.push("/register/onboarding/upload-cv");
-  }
+  };
 
+  const HandleNextStep = async () => {
+    setIsSubmitting(true);
+    setApiError(null);
 
-  const HandleNextStep = () => {
-    router.push("/register/onboarding/verify-email");
+    try {
+      const payload: PreferencesUpsertRequest = {
+        careerStatus:
+          selectedStage === "fresh"
+            ? "FRESH_GRADUATE"
+            : selectedStage === "early"
+              ? "EARLY_CAREER"
+              : "CAREER_SWITCHER",
+        jobSeekingStatus:
+          selectedStatus === "Immediate Start"
+            ? "IMMEDIATE"
+            : selectedStatus === "Within 1 Month"
+              ? "ONE_MONTH"
+              : "THREE_MONTHS",
+        targetRoles: targetRoles,
+        locations: [{ province, city }],
+        workTypes: selectedArrangements.map((arr) => {
+          if (arr === "Hybrid") return "HYBRID";
+          if (arr === "Remote") return "REMOTE";
+          return "ONSITE";
+        }) as ("REMOTE" | "HYBRID" | "ONSITE")[],
+        emailNotificationsEnabled: true,
+      };
+
+      await updatePreferences(payload);
+      router.push("/register/onboarding/verify-email");
+    } catch (err: any) {
+      setApiError(
+        err.message || "Failed to save preferences. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -134,7 +334,9 @@ export default function JobReferencePage() {
         {/* Step & Progress */}
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-gray-400 font-medium">Step 3 of 4</p>
-          <p className="text-xs text-gray-400 font-medium">Career Preferences</p>
+          <p className="text-xs text-gray-400 font-medium">
+            Career Preferences
+          </p>
         </div>
 
         {/* Segmented Progress Bar */}
@@ -150,14 +352,38 @@ export default function JobReferencePage() {
           What are you looking for?
         </h2>
         <p className="text-sm text-gray-500 leading-relaxed mb-8 max-w-[520px]">
-          Help us tailor your Atelier experience by sharing your career stage and current objectives.
+          Help us tailor your Atelier experience by sharing your career stage
+          and current objectives.
         </p>
+
+        {apiError && (
+          <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0 mt-0.5 text-red-500"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+            <span>{apiError}</span>
+          </div>
+        )}
 
         {/* ─── Form Card ─── */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_8px_rgba(0,0,0,0.04)] p-6 sm:p-8">
           {/* Current Career Stage */}
           <div className="mb-8">
-            <h3 className="text-base font-bold text-gray-900 mb-4">Current Career Stage</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-4">
+              Current Career Stage
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {careerStages.map((stage) => {
                 const isActive = selectedStage === stage.id;
@@ -173,16 +399,22 @@ export default function JobReferencePage() {
                     }`}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${isActive ? "text-gray-900" : "text-gray-700"}`}>
+                      <p
+                        className={`text-sm font-semibold ${isActive ? "text-gray-900" : "text-gray-700"}`}
+                      >
                         {stage.label}
                       </p>
-                      <p className={`text-xs mt-0.5 ${isActive ? "text-[#2B7FE0]" : "text-gray-400"}`}>
+                      <p
+                        className={`text-xs mt-0.5 ${isActive ? "text-[#2B7FE0]" : "text-gray-400"}`}
+                      >
                         {stage.sub}
                       </p>
                     </div>
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                      isActive ? "bg-[#2B7FE0]" : "bg-gray-100"
-                    }`}>
+                    <div
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                        isActive ? "bg-[#2B7FE0]" : "bg-gray-100"
+                      }`}
+                    >
                       {stageIcon(stage.icon, isActive)}
                     </div>
                   </button>
@@ -193,7 +425,9 @@ export default function JobReferencePage() {
 
           {/* Job Seeking Status */}
           <div className="mb-8">
-            <h3 className="text-base font-bold text-gray-900 mb-4">Job Seeking Status</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-4">
+              Job Seeking Status
+            </h3>
             <div className="flex flex-wrap gap-2.5">
               {jobStatuses.map((status) => {
                 const isActive = selectedStatus === status;
@@ -217,7 +451,9 @@ export default function JobReferencePage() {
 
           {/* Target Roles */}
           <div className="mb-8">
-            <h3 className="text-base font-bold text-gray-900 mb-4">Target Roles</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-4">
+              Target Roles
+            </h3>
 
             {/* Search Input */}
             <div className="relative flex items-center mb-3">
@@ -236,7 +472,7 @@ export default function JobReferencePage() {
 
             {/* Selected Tags */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {targetRoles.map((role) => (
+              {targetRoles && targetRoles.map((role) => (
                 <span
                   key={role}
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#2B7FE0] text-white text-sm font-medium"
@@ -278,44 +514,67 @@ export default function JobReferencePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
             {/* Preferred Location */}
             <div>
-              <h3 className="text-base font-bold text-gray-900 mb-4">Preferred Location</h3>
+              <h3 className="text-base font-bold text-gray-900 mb-4">
+                Preferred Location
+              </h3>
 
               {/* Province */}
               <div className="mb-4">
-                <label className="text-xs font-medium text-gray-500 mb-1.5 block">Province / State</label>
+                <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+                  Province
+                </label>
                 <div className="relative">
                   <select
-                    value={province}
-                    onChange={(e) => setProvince(e.target.value)}
-                    className="w-full h-11 px-3.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none appearance-none cursor-pointer focus:border-[#2B7FE0] focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08] transition-all duration-200"
+                    value={selectedProvinceId}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      const found = provinces.find((p) => p.id === id);
+                      setSelectedProvinceId(id);
+                      setProvince(found?.name ?? "");
+                    }}
+                    disabled={isLoadingProvinces}
+                    className="w-full h-11 px-3.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none appearance-none cursor-pointer focus:border-[#2B7FE0] focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <option value="Ontario">Ontario</option>
-                    <option value="Quebec">Quebec</option>
-                    <option value="British Columbia">British Columbia</option>
-                    <option value="Alberta">Alberta</option>
+                    {isLoadingProvinces ? (
+                      <option value="">Loading provinces...</option>
+                    ) : (
+                      provinces.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                    <ChevronDownIcon />
+                    {isLoadingProvinces ? <SpinnerIcon /> : <ChevronDownIcon />}
                   </span>
                 </div>
               </div>
 
               {/* City */}
               <div>
-                <label className="text-xs font-medium text-gray-500 mb-1.5 block">City</label>
+                <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+                  City / Regency
+                </label>
                 <div className="relative">
                   <select
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full h-11 px-3.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none appearance-none cursor-pointer focus:border-[#2B7FE0] focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08] transition-all duration-200"
+                    disabled={isLoadingCities || cities.length === 0}
+                    className="w-full h-11 px-3.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none appearance-none cursor-pointer focus:border-[#2B7FE0] focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <option value="Toronto">Toronto</option>
-                    <option value="Ottawa">Ottawa</option>
-                    <option value="Mississauga">Mississauga</option>
-                    <option value="Hamilton">Hamilton</option>
+                    {isLoadingCities ? (
+                      <option value="">Loading cities...</option>
+                    ) : (
+                      cities.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                    <ChevronDownIcon />
+                    {isLoadingCities ? <SpinnerIcon /> : <ChevronDownIcon />}
                   </span>
                 </div>
               </div>
@@ -323,7 +582,9 @@ export default function JobReferencePage() {
 
             {/* Work Arrangement */}
             <div>
-              <h3 className="text-base font-bold text-gray-900 mb-4">Work Arrangement</h3>
+              <h3 className="text-base font-bold text-gray-900 mb-4">
+                Work Arrangement
+              </h3>
               <div className="flex flex-col gap-0">
                 {workArrangements.map((arrangement) => {
                   const isChecked = selectedArrangements.includes(arrangement);
@@ -338,7 +599,9 @@ export default function JobReferencePage() {
                         onChange={() => toggleArrangement(arrangement)}
                         className="w-[18px] h-[18px] accent-[#2B7FE0] cursor-pointer shrink-0 rounded"
                       />
-                      <span className="text-sm text-gray-700 font-medium">{arrangement}</span>
+                      <span className="text-sm text-gray-700 font-medium">
+                        {arrangement}
+                      </span>
                     </label>
                   );
                 })}
@@ -359,9 +622,11 @@ export default function JobReferencePage() {
           <button
             type="button"
             onClick={() => HandleNextStep()}
-            className="px-8 py-3 rounded-lg bg-[#2B7FE0] text-white text-sm font-semibold hover:bg-[#2470c9] active:scale-[0.98] transition-all duration-200 border-none cursor-pointer flex items-center gap-1.5 group"
+            disabled={isSubmitting}
+            className="px-8 py-3 rounded-lg bg-[#2B7FE0] text-white text-sm font-semibold hover:bg-[#2470c9] active:scale-[0.98] transition-all duration-200 border-none cursor-pointer flex items-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Continue to Final Step
+            {isSubmitting && <SpinnerIcon />}
+            {isSubmitting ? "Saving..." : "Continue to Final Step"}
           </button>
         </div>
       </div>
