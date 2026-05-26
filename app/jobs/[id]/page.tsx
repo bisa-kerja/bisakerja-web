@@ -8,7 +8,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
   APIError,
+  createBookmark,
   createApplication,
+  deleteBookmark,
+  fetchBookmarks,
   fetchJobDetail,
   type APIJobDetail,
 } from "@/lib/api";
@@ -76,9 +79,18 @@ function ExternalLinkIcon() {
   );
 }
 
-function BookmarkOutlineIcon() {
+function BookmarkOutlineIcon({ active = false }: { active?: boolean }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill={active ? "#2563EB" : "none"}
+      stroke={active ? "#2563EB" : "currentColor"}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
     </svg>
   );
@@ -173,6 +185,10 @@ export default function JobDetailPage({
   const [isApplying, setIsApplying] = useState(false);
   const [applyMessage, setApplyMessage] = useState<string | null>(null);
   const [applyError, setApplyError] = useState<string | null>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+  const [bookmarkError, setBookmarkError] = useState<string | null>(null);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -195,6 +211,50 @@ export default function JobDetailPage({
       }
     }
     load();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBookmarkState() {
+      setBookmarkError(null);
+
+      try {
+        let bookmarkPage = 1;
+        let hasNextPage = true;
+
+        while (hasNextPage && !cancelled) {
+          const res = await fetchBookmarks({
+            page: bookmarkPage,
+            limit: 100,
+            sort: "created_desc",
+          });
+          const matchingBookmark = res.data.find((bookmark) => bookmark.job.id === id);
+
+          if (matchingBookmark) {
+            if (!cancelled) {
+              setIsBookmarked(true);
+            }
+            return;
+          }
+
+          hasNextPage = res.meta.pagination.hasNextPage;
+          bookmarkPage += 1;
+        }
+
+        if (!cancelled) {
+          setIsBookmarked(false);
+        }
+      } catch (error) {
+        if (!cancelled && error instanceof APIError && error.status === 401) {
+          setIsBookmarked(false);
+        }
+      }
+    }
+
+    loadBookmarkState();
+
     return () => { cancelled = true; };
   }, [id]);
 
@@ -280,6 +340,62 @@ export default function JobDetailPage({
     }
   };
 
+  const handleBookmarkClick = async () => {
+    if (isBookmarkLoading) return;
+
+    setIsBookmarkLoading(true);
+    setBookmarkError(null);
+
+    try {
+      if (isBookmarked) {
+        setIsBookmarked(false);
+        await deleteBookmark(job.id);
+        return;
+      }
+
+      await createBookmark(job.id);
+      setIsBookmarked(true);
+    } catch (error) {
+      if (error instanceof APIError && error.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      setBookmarkError(
+        error instanceof Error ? error.message : "Gagal memperbarui bookmark",
+      );
+    } finally {
+      setIsBookmarkLoading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    const shareData = {
+      title: job.title,
+      text: `${job.title} di ${job.company.name}`,
+      url: shareUrl,
+    };
+
+    setShareMessage(null);
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareUrl);
+      setShareMessage("Link lowongan disalin.");
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      setShareMessage("Gagal membagikan link lowongan.");
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50" style={{ colorScheme: "light" }}>
       <Navbar />
@@ -287,7 +403,7 @@ export default function JobDetailPage({
       {/* ─── Back to Jobs ─── */}
       <div className="max-w-[1240px] mx-auto px-6 pt-6 w-full">
         <Link
-          href="/"
+          href="/loker"
           className="inline-flex items-center gap-1.5 text-blue-600 text-sm font-medium no-underline hover:text-blue-700 transition-colors"
         >
           <ArrowLeftIcon />
@@ -297,7 +413,7 @@ export default function JobDetailPage({
 
       {/* ─── Header Section ─── */}
       <section className="max-w-[1240px] mx-auto px-6 pt-6 pb-8 w-full">
-        <div className="flex items-start justify-between gap-6 flex-wrap">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6">
           {/* Left: Logo + Title */}
           <div className="flex items-start gap-4">
             {job.company.logoUrl ? (
@@ -335,7 +451,7 @@ export default function JobDetailPage({
           </div>
 
           {/* Right: Actions */}
-          <div className="flex flex-col items-end gap-3 shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 w-full sm:w-auto">
             <button
               id="apply-button"
               type="button"
@@ -360,15 +476,41 @@ export default function JobDetailPage({
               </p>
             )}
             <div className="flex items-center gap-4">
-              <button className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors p-0">
-                <BookmarkOutlineIcon />
-                Save
+              <button
+                type="button"
+                aria-pressed={isBookmarked}
+                disabled={isBookmarkLoading}
+                title={bookmarkError ?? (isBookmarked ? "Hapus bookmark" : "Simpan lowongan")}
+                onClick={handleBookmarkClick}
+                className={`flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-sm font-medium transition-colors p-0 disabled:cursor-wait disabled:opacity-60 ${
+                  isBookmarked
+                    ? "text-blue-600 hover:text-blue-700"
+                    : "text-gray-500 hover:text-gray-700"
+                } ${bookmarkError ? "ring-1 ring-red-200 rounded-md" : ""}`}
+              >
+                <BookmarkOutlineIcon active={isBookmarked} />
+                {isBookmarked ? "Saved" : "Save"}
               </button>
-              <button className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors p-0">
+              <button
+                type="button"
+                onClick={handleShare}
+                className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors p-0"
+              >
                 <ShareIcon />
                 Share
               </button>
             </div>
+            {(bookmarkError || shareMessage) && (
+              <p
+                className={`max-w-[280px] text-right text-xs font-medium ${
+                  bookmarkError || shareMessage?.startsWith("Gagal")
+                    ? "text-red-600"
+                    : "text-green-600"
+                }`}
+              >
+                {bookmarkError ?? shareMessage}
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -380,7 +522,7 @@ export default function JobDetailPage({
 
       {/* ─── Content Area: Main + Sidebar ─── */}
       <section className="max-w-[1240px] mx-auto px-6 pt-8 pb-12 w-full">
-        <div className="flex gap-8" style={{ alignItems: "flex-start" }}>
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8" style={{ alignItems: "flex-start" }}>
           {/* ─── Main Content ─── */}
           <div className="flex-1 min-w-0">
             {/* Description */}
@@ -430,7 +572,7 @@ export default function JobDetailPage({
           </div>
 
           {/* ─── Sidebar ─── */}
-          <aside className="w-[320px] shrink-0 flex flex-col gap-5 sticky top-[80px]">
+          <aside className="w-full lg:w-[320px] shrink-0 flex flex-col gap-5 lg:sticky lg:top-[80px]">
             {/* Job Details Card */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-base font-bold text-gray-900 m-0 mb-5">Detail Pekerjaan</h3>

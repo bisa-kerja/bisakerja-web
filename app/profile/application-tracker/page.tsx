@@ -26,12 +26,9 @@ const APPLICATION_STATUSES: ApplicationStatus[] = [
 
 const APPLICATION_STATUS_LABELS: Record<string, string> = {
   APPLIED: "Applied",
-  SCREENING: "Screening",
   INTERVIEW: "Interview",
-  OFFER: "Offer",
   ACCEPTED: "Accepted",
   REJECTED: "Rejected",
-  WITHDRAWN: "Withdrawn",
 };
 
 const APPLICATION_STATUS_STYLES: Record<string, string> = {

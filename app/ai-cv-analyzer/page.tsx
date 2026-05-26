@@ -3,7 +3,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import CVResultPage from "@/components/CVResultPage";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { TestimonialsColumn } from "@/components/ui/testimonials-columns-1";
+import { motion } from "motion/react";
 
 /* ─── Icon Components ─── */
 function UploadIcon() {
@@ -163,7 +166,7 @@ function LoadingOverlay({ currentStep }: { currentStep: number }) {
               <div
                 className="flex items-center gap-3 rounded-full px-6 py-3.5 transition-all duration-500"
                 style={{
-                  minWidth: isPending ? "320px" : isActive ? "380px" : "420px",
+                  minWidth: isPending ? "240px" : isActive ? "280px" : "300px",
                   maxWidth: "100%",
                   background: isCompleted
                     ? "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)"
@@ -211,104 +214,67 @@ const analysisAspects = [
   "Career Recommendation",
 ];
 
-const aspectIcons = [
-  "📋", "📞", "💡", "📝", "💼", "🏆", "🎓", "🏢", "✍️", "➕", "🔑", "🧭",
-];
 
-const reviews: Review[] = [
+const testimonials = [
   {
-    name: "Workshees(@worksheess)",
-    role: "Komunitas Karir",
-    text: "gw kira CV gw udah bagus, ternyata masih banyak yang kurang ini guru, gara-gara fitur ini, jadi tau kursor CV harus ada kata kunci yang relevan sesuai posisi 😱",
-    avatar: "W",
-    avatarBg: "#7C3AED",
+    text: "Analisisnya jelas banget. Aku langsung tahu bagian pengalaman mana yang harus diperbaiki supaya lebih cocok dengan posisi yang aku incar.",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
+    name: "Nadya Prameswari",
+    role: "Fresh Graduate",
   },
   {
-    name: "Rio (@riocaronekso)",
-    role: "Career Development Content Creator",
-    text: "Step 1 dapet kerja: Improve & isi notice HRD, upeole CV lo disini. Analisis lengkap & action-item -nya super detail.",
-    avatar: "R",
-    avatarBg: "#2563EB",
+    text: "Biasanya bingung mulai revisi CV dari mana. Di sini rekomendasinya spesifik, mulai dari kata kunci, struktur, sampai kalimat yang kurang kuat.",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
+    name: "Rizky Aditya",
+    role: "Software Engineer",
   },
   {
-    name: "Andre Saras (@andrebrn_)",
-    role: "Content Creator",
-    text: "jujur ni ngabahat banget ini in i buat obsesivers. Langsung kelarin masih yang harus gua benerin & benefit. Ok daji approved.",
-    avatar: "A",
-    avatarBg: "#059669",
+    text: "Fitur ini bantu aku menyesuaikan CV untuk lowongan product analyst. Setelah revisi, CV-ku terasa jauh lebih rapi dan fokus.",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
+    name: "Aulia Rahman",
+    role: "Product Analyst",
   },
   {
-    name: "Putri (@chocostudy_)",
-    role: "Undergraduate Student",
-    text: "Bru ket menjpa gw kusto beberapa past internship yobbish masih kuioh connectos 5 sst",
-    avatar: "P",
-    avatarBg: "#DC2626",
+    text: "Yang paling kepake buatku adalah insight keyword ATS. Aku jadi bisa menulis skill dan pengalaman dengan bahasa yang lebih relevan.",
+    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&q=80",
+    name: "Dimas Saputra",
+    role: "Data Analyst",
   },
   {
-    name: "Theresa Naesya (@minanotolaep)",
-    role: "Fresh graduate",
-    text: "bagus analytica, lo ternyata fitursnya bentar bantai bangat buat karir lojeyword mana yang harus di highlight di CV.",
-    avatar: "T",
-    avatarBg: "#7C3AED",
+    text: "Prosesnya cepat, tapi hasilnya detail. Cocok buat cek CV sebelum submit lamaran supaya tidak cuma mengandalkan feeling.",
+    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80",
+    name: "Karina Salsabila",
+    role: "Marketing Associate",
   },
   {
-    name: "Karinaspacc(@karinaspacc)",
-    role: "Media & Komunitas Karir",
-    text: "Buat yg sering cari kerja, plis belihin CV di bisakerja. Fiake CV Reviewer di Cosin dsini bagian s - 2 & poin perbaikannya lengkap.",
-    avatar: "K",
-    avatarBg: "#0891B2",
+    text: "Aku suka karena rekomendasinya actionable. Bukan sekadar skor, tapi ada arahan jelas bagian mana yang perlu ditulis ulang.",
+    image: "https://images.unsplash.com/photo-1530268729831-4b0b9e170218?auto=format&fit=crop&w=120&q=80",
+    name: "Bagus Pratama",
+    role: "UI/UX Designer",
   },
   {
-    name: "Nana (@narasdiyaa)",
-    role: "Content Creator Karir",
-    text: "Soual cangugdi buat free!ngokl Gak sampe 1 meni udpat semui perbailain CV luar oleh di notice HR & bonus personalitystes!",
-    avatar: "N",
-    avatarBg: "#D97706",
+    text: "Membantu banget untuk career switcher. CV-ku jadi lebih menonjolkan transferable skills dan pengalaman yang paling relevan.",
+    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=120&q=80",
+    name: "Maya Kartika",
+    role: "Business Analyst",
   },
   {
-    name: "Imam Vishal (@imampron_)",
-    role: "Undergraduate Student",
-    text: "bijut banok ai fitur yg bikin CV kelihin merarik dimata HR. Penting bgt buat mahsiswa untuk di review secara detall gini.",
-    avatar: "I",
-    avatarBg: "#2563EB",
+    text: "Setelah pakai analyzer ini, aku jadi paham kenapa CV sebelumnya kurang kebaca ATS. Revisi berikutnya jauh lebih terarah.",
+    image: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=120&q=80",
+    name: "Fajar Nugroho",
+    role: "Operations Specialist",
   },
   {
-    name: "Indriwan Sadewa (@indrisaaewien_)",
-    role: "Undergraduate Student",
-    text: "Frui ni bercar karitna jupe benerin CV Non-ATS jadi format ATS & ubah bahasa non-formal jadi lebih professional.",
-    avatar: "I",
-    avatarBg: "#059669",
-  },
-  {
-    name: "Gerald Rombeldayk (@ger_obaldsoed)",
-    role: "Legal Consultant",
-    text: "bang ngshsin biut update CV non badisya se in-degtn huf 🙃 neifbit buat gw mang baca tips 2 di internet 🥺",
-    avatar: "G",
-    avatarBg: "#DC2626",
-  },
-  {
-    name: "Jessica F. (@bizeemeglizer_)",
-    role: "Legal Consultant",
-    text: "Thanks to this tool. CV aku jadi lebih clean dan eye-catching. Recommended banget buat yang lagi jadi hunting!",
-    avatar: "J",
-    avatarBg: "#7C3AED",
-  },
-  {
-    name: "Eza Hazami ★",
-    role: "Tech HR Business Partner",
-    text: "tangun suka nayahatin diri sendiri! kalo ga dipanggil HRD, bisa jadi ga faktor human error juga. Better cebaikain tau CV mu ini review dagi bisakerja review-cv nya Deals! Gratis kais mas. Css 🙂",
-    avatar: "E",
-    avatarBg: "#0891B2",
+    text: "Sebagai mentor, aku sering rekomendasikan ini ke mentee karena output-nya praktis dan mudah dipahami untuk pemula.",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
+    name: "Intan Lestari",
+    role: "Career Mentor",
   },
 ];
 
-interface Review {
-  name: string;
-  role: string;
-  text: string;
-  avatar: string;
-  avatarBg: string;
-}
+const firstColumn = testimonials.slice(0, 3);
+const secondColumn = testimonials.slice(3, 6);
+const thirdColumn = testimonials.slice(6, 9);
 
 const faqItems = [
   {
@@ -340,32 +306,6 @@ const faqItems = [
 
 /* ─── Sub-Components ─── */
 
-function ReviewCard({ review }: { review: Review }) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col gap-3 relative transition-all duration-200 hover:shadow-md group">
-      {/* Close/Dismiss Icon */}
-      <button className="absolute top-3 right-3 text-gray-300 hover:text-gray-500 transition-colors bg-transparent border-none cursor-pointer p-0.5">
-        <CloseIcon />
-      </button>
-      {/* Author */}
-      <div className="flex items-center gap-2.5">
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-          style={{ background: review.avatarBg }}
-        >
-          {review.avatar}
-        </div>
-        <div>
-          <p className="text-[13px] font-semibold text-gray-900 m-0 leading-tight">{review.name}</p>
-          <p className="text-[11px] text-gray-500 m-0">{review.role}</p>
-        </div>
-      </div>
-      {/* Body */}
-      <p className="text-[12px] text-gray-600 m-0 leading-relaxed line-clamp-4">{review.text}</p>
-    </div>
-  );
-}
-
 function FAQItem({ item, isOpen, onToggle }: { item: (typeof faqItems)[0]; isOpen: boolean; onToggle: () => void }) {
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 bg-white">
@@ -393,6 +333,7 @@ function FAQItem({ item, isOpen, onToggle }: { item: (typeof faqItems)[0]; isOpe
 
 /* ─── Main Page ─── */
 export default function AICVAnalyzer() {
+  const router = useRouter();
   const [selectedLanguage, setSelectedLanguage] = useState<"en" | "id">("id");
   const [selectedPurpose, setSelectedPurpose] = useState<"job" | "scholarship">("job");
   const [activeAspect, setActiveAspect] = useState(0);
@@ -405,7 +346,6 @@ export default function AICVAnalyzer() {
   const [jobDescription, setJobDescription] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [showResults, setShowResults] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* ─── Analysis Loading Simulation ─── */
@@ -418,7 +358,7 @@ export default function AICVAnalyzer() {
       const timeout = setTimeout(() => {
         setIsAnalyzing(false);
         setCurrentStep(0);
-        setShowResults(true);
+        router.push("/ai-cv-analyzer/result");
       }, 800);
       return () => clearTimeout(timeout);
     }
@@ -428,7 +368,7 @@ export default function AICVAnalyzer() {
     }, 2000);
 
     return () => clearTimeout(timeout);
-  }, [isAnalyzing, currentStep]);
+  }, [isAnalyzing, currentStep, router]);
 
   const handleAnalyze = useCallback(() => {
     if (!uploadedFile) return;
@@ -490,33 +430,46 @@ export default function AICVAnalyzer() {
     }
   };
 
-
-  if (showResults) {
-    return (
-      <div className="flex flex-col min-h-screen bg-gray-50" style={{ colorScheme: "light" }}>
-        <Navbar />
-        <CVResultPage onBack={() => setShowResults(false)} />
-        <Footer />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50" style={{ colorScheme: "light" }}>
+    <div className="flex flex-col min-h-screen bg-white">
       {isAnalyzing && <LoadingOverlay currentStep={currentStep} />}
       <Navbar />
 
       {/* ─── Hero Section ─── */}
-      <section className="bg-gradient-to-br from-blue-700 via-blue-600 to-blue-400 py-10 px-8 text-center">
-        <h1 className="text-[22px] md:text-[26px] font-bold text-white leading-relaxed max-w-[1240px] mx-auto">
-          Tingkatkan Peluang Lolos Screening CV ATS Sebesar 73%{" "}
-          <span className="inline-block ">🚀</span>
-        </h1>
+      <section className="relative isolate overflow-hidden px-6 pb-20 pt-28" style={{ background: "linear-gradient(135deg, #1e40af 0%, #2563eb 35%, #3b82f6 65%, #60a5fa 100%)" }}>
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full opacity-10" style={{ background: "radial-gradient(circle, white 0%, transparent 70%)" }} />
+          <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, white 0%, transparent 70%)" }} />
+          <div className="absolute top-1/2 left-1/4 w-64 h-64 rounded-full opacity-5" style={{ background: "radial-gradient(circle, white 0%, transparent 70%)" }} />
+        </div>
+        <div className="relative max-w-[900px] mx-auto flex items-center justify-between gap-8">
+          <div className="flex-1 text-left">
+            <h1 className="text-[28px] md:text-[34px] font-bold text-white leading-relaxed">
+              Tingkatkan Peluang Lolos Screening<br/>
+              <span className="text-yellow-300">CV ATS Sebesar 73%</span>
+            </h1>
+            <p className="mt-3 text-blue-100 text-base md:text-lg max-w-xl leading-relaxed">
+              Analisis CV kamu dengan AI dan dapatkan rekomendasi spesifik untuk meningkatkan peluang lolos screening ATS.
+            </p>
+          </div>
+          <div className="block max-[891px]:hidden shrink-0 absolute -bottom-36 -right-24">
+            <Image
+              src="/maskots/statistics.png"
+              alt="BisaKerja Statistics Mascot"
+              width={420}
+              height={420}
+              priority
+              className="drop-shadow-2xl"
+              style={{ filter: "drop-shadow(0 10px 30px rgba(0,0,0,0.2))" }}
+            />
+          </div>
+        </div>
       </section>
 
       {/* ─── Upload Card ─── */}
-      <section className="max-w-[620px] mx-auto px-6 -mt-6 relative z-10 w-full">
-        <div className="bg-white rounded-2xl shadow-[0_4px_32px_rgba(37,99,235,0.10)] px-7 pt-6 pb-6 border border-blue-50">
+      <section className="max-w-[900px] mx-auto -mt-12 relative z-10 w-full bg-white rounded-xl px-4 md:px-0">
+        <div className="bg-white rounded-2xl shadow-md px-4 md:px-7 pt-5 md:pt-6 pb-5 md:pb-6 border border-blue-50">
              {/* ── Document Input ── */}
           <label className="text-[13px] font-semibold text-gray-800 mb-2 block">
               Upload Your CV <span className="text-red-500">*</span>
@@ -528,7 +481,7 @@ export default function AICVAnalyzer() {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-200 mb-4 ${
+            className={`border-2 border-dashed rounded-xl px-8 py-12 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-200 mb-4 ${
               isDragging
                 ? "border-blue-500 bg-blue-50/60"
                 : "border-gray-200 bg-gray-50/50 hover:border-blue-400 hover:bg-blue-50/30"
@@ -630,35 +583,6 @@ export default function AICVAnalyzer() {
             </div>
           </div>
 
-          {/* Language Selector */}
-          <div className="mb-4">
-            <label className="text-[13px] font-semibold text-gray-800 mb-2 block">
-              Select Language <span className="text-red-500">*</span>
-            </label>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSelectedLanguage("en")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium border cursor-pointer transition-all duration-200 ${
-                  selectedLanguage === "en"
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                }`}
-              >
-                English
-              </button>
-              <button
-                onClick={() => setSelectedLanguage("id")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium border cursor-pointer transition-all duration-200 ${
-                  selectedLanguage === "id"
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                }`}
-              >
-                Bahasa Indonesia
-              </button>
-            </div>
-          </div>
-
           {/* Submit Button */}
           <div className="flex justify-center mt-6">
             <button
@@ -676,25 +600,7 @@ export default function AICVAnalyzer() {
         </div>
       </section>
 
-      {/* ─── Reviews Section ─── */}
-      <section className="py-14 px-6 bg-gray-50">
-        {/* Rating Header */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <StarIcon />
-          <span className="text-[20px] md:text-[22px] font-bold text-gray-900">
-            4.9/5 • Review dari 1.035 Pengguna
-          </span>
-        </div>
-
-        {/* Review Grid */}
-        <div className="max-w-[1100px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {reviews.map((review) => (
-            <ReviewCard key={review.name} review={review} />
-          ))}
-        </div>
-      </section>
-
-      {/* ─── FAQ Section ─── */}
+          {/* ─── FAQ Section ─── */}
       <section className="py-14 px-6 bg-white">
         <h2 className="text-[20px] md:text-[24px] font-bold text-gray-900 text-center mb-8">
           Semua yang Perlu Kamu Ketahui Tentang CV ATS
@@ -711,6 +617,35 @@ export default function AICVAnalyzer() {
           ))}
         </div>
       </section>
+
+      {/* ─── Testimonials Section ─── */}
+      <section className="bg-white py-14 px-6 relative">
+        <div className="container z-10 mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true }}
+            className="flex flex-col items-center justify-center max-w-[540px] mx-auto text-center"
+          >
+
+            <h2 className="text-[22px] sm:text-[26px] md:text-[32px] font-bold tracking-tight mt-5 text-gray-900">
+              Apa Kata Pengguna BisaKerja
+            </h2>
+            <p className="text-center mt-4 text-[14px] text-gray-600 leading-relaxed">
+              Cerita dari pengguna yang berhasil membuat CV mereka lebih rapi, relevan, dan siap melewati screening ATS.
+            </p>
+          </motion.div>
+
+          <div className="flex justify-center gap-6 mt-10 [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)] max-h-[740px] overflow-hidden">
+            <TestimonialsColumn testimonials={firstColumn} duration={15} />
+            <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={19} />
+            <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={17} />
+          </div>
+        </div>
+      </section>
+
+
 
       <Footer />
     </div>

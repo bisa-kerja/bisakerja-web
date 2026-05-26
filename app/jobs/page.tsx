@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import JobCard from "@/components/JobCard";
+import Image from "next/image";
 import {
   APIError,
   fetchBookmarks,
@@ -217,17 +218,41 @@ export default function Home() {
       <Navbar />
 
       {/* ─── Hero Section ─── */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400 py-14 px-8 text-center">
-        <h1 className="text-[28px] font-bold text-white leading-relaxed max-w-[1240px] mx-auto">
-          Cari Lowongan Kerja Pakai BisaKerja{" "}
-          <span className="text-yellow-300">#LebihPasti</span>
-        </h1>
+      <section className="relative isolate overflow-hidden px-6 pb-20 pt-28" style={{ background: "linear-gradient(135deg, #1e40af 0%, #2563eb 35%, #3b82f6 65%, #60a5fa 100%)" }}>
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full opacity-10" style={{ background: "radial-gradient(circle, white 0%, transparent 70%)" }} />
+          <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, white 0%, transparent 70%)" }} />
+          <div className="absolute top-1/2 left-1/4 w-64 h-64 rounded-full opacity-5" style={{ background: "radial-gradient(circle, white 0%, transparent 70%)" }} />
+        </div>
+        <div className="relative max-w-[1240px] mx-auto flex items-center justify-between gap-8">
+          <div className="flex-1 text-left">
+            <h1 className="text-[28px] md:text-[34px] font-bold text-white leading-relaxed">
+              Cari Lowongan Kerja Pakai BisaKerja{" "}
+              <span className="text-yellow-300">#LebihPasti</span>
+            </h1>
+            <p className="mt-3 text-blue-100 text-base md:text-lg max-w-xl leading-relaxed">
+              Temukan ribuan lowongan kerja terbaik yang sesuai dengan keahlian dan minat kamu.
+            </p>
+          </div>
+          <div className="hidden md:block shrink-0 absolute -bottom-36 right-0">
+            <Image
+              src="/maskots/job-search.png"
+              alt="BisaKerja Mascot"
+              width={420}
+              height={420}
+              priority
+              className="drop-shadow-2xl"
+              style={{ filter: "drop-shadow(0 10px 30px rgba(0,0,0,0.2))" }}
+            />
+          </div>
+        </div>
       </section>
 
       {/* ─── Search & Filters Section ─── */}
       <section className="max-w-[1240px] mx-auto px-6 -mt-9 relative z-10 w-full">
         {/* Search Card */}
-        <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] px-7 pt-6 pb-5">
+        <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] px-4 md:px-7 pt-5 md:pt-6 pb-4 md:pb-5">
           {/* Search Bar */}
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 flex items-center border border-gray-200 rounded-[10px] pl-3.5 h-11 bg-white">
@@ -249,7 +274,7 @@ export default function Home() {
           </div>
 
           {/* Filter Tags */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-wrap">
               {filterOptions.map((filter) => (
                 <div key={filter.paramKey} className="relative">
@@ -387,13 +412,14 @@ export default function Home() {
 
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-10">
+              <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-10 flex-wrap">
                 <button
                   disabled={!pagination.hasPrevPage}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                  className="px-2.5 sm:px-4 py-2 rounded-lg border border-gray-200 bg-white text-xs sm:text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
-                  ← Sebelumnya
+                  <span className="hidden sm:inline">← Sebelumnya</span>
+                  <span className="sm:hidden">←</span>
                 </button>
                 <div className="flex items-center gap-1">
                   {/* Show page numbers */}
@@ -437,9 +463,10 @@ export default function Home() {
                 <button
                   disabled={!pagination.hasNextPage}
                   onClick={() => setPage((p) => p + 1)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                  className="px-2.5 sm:px-4 py-2 rounded-lg border border-gray-200 bg-white text-xs sm:text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
-                  Selanjutnya →
+                  <span className="hidden sm:inline">Selanjutnya →</span>
+                  <span className="sm:hidden">→</span>
                 </button>
               </div>
             )}

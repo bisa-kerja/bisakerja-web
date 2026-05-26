@@ -1,0 +1,105 @@
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Globe, FileSearch, BookmarkCheck, SlidersHorizontal } from 'lucide-react'
+
+export function Features() {
+    return (
+        <section className="bg-white py-16 md:py-32">
+            <div className="mx-auto max-w-5xl px-6">
+                <div className="mb-12 text-center">
+                    <h2 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">
+                        Semua yang kamu butuhkan, dalam satu platform.
+                    </h2>
+                    <p className="mt-4 text-base text-gray-600">
+                        Dari pencarian lowongan hingga evaluasi CV — BisaKerja hadir untuk setiap tahap perjalanan kariermu.
+                    </p>
+                </div>
+
+                <div className="mx-auto grid gap-2 sm:grid-cols-5">
+                    {/* Card 1: AI CV Analyzer - large left */}
+                    <Card className="group overflow-hidden shadow-black/5 sm:col-span-3 sm:rounded-none sm:rounded-tl-xl border-black/5">
+                        <CardHeader>
+                            <div className="md:p-6">
+                                <p className="font-bold text-lg">Analisis CV dengan Kecerdasan Buatan</p>
+                                <p className="text-muted-foreground mt-3 max-w-sm text-sm">
+                                    Upload CV-mu dan dapatkan skor kecocokan, saran perbaikan, serta highlight bagian yang perlu diperbarui semuanya instan.
+                                </p>
+                            </div>
+                        </CardHeader>
+
+                        <div className="relative h-fit pl-6 md:pl-12">
+                            <div className="absolute -inset-6 [background:radial-gradient(75%_95%_at_50%_0%,transparent,hsl(var(--background))_100%)]"></div>
+
+                            <div className="bg-background overflow-hidden rounded-tl-lg border-l border-t pl-2 pt-2 border-black/5">
+                                {/* Placeholder for AI CV Analyzer screenshot */}
+                                <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 md:h-64">
+                                    <div className="text-center">
+                                        <FileSearch className="mx-auto mb-3 size-12 text-blue-400" />
+                                        <p className="text-sm font-medium text-blue-600">AI CV Analyzer</p>
+                                        <p className="mt-1 text-xs text-blue-400">Segera hadir tampilan preview</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+
+                    {/* Card 2: Smart Filters - small right */}
+                    <Card className="group overflow-hidden shadow-zinc-950/5 sm:col-span-2 sm:rounded-none sm:rounded-tr-xl border-black/5">
+                        <p className="mx-auto my-6 max-w-md text-balance px-6 text-center text-lg font-semibold sm:text-2xl md:p-6">
+                            Filter cerdas untuk menemukan lowongan yang tepat.
+                        </p>
+
+                        <CardContent className="mt-auto h-fit">
+                            <div className="relative mb-6 sm:mb-0">
+                                <div className="absolute -inset-6 [background:radial-gradient(50%_75%_at_75%_50%,transparent,hsl(var(--background))_100%)]"></div>
+                                <div className="aspect-76/59 overflow-hidden rounded-r-lg border border-black/5 bg-gradient-to-br from-indigo-50 to-violet-100">
+                                    <div className="flex h-full min-h-40 items-center justify-center">
+                                        <div className="text-center">
+                                            <SlidersHorizontal className="mx-auto mb-2 size-10 text-indigo-400" />
+                                            <p className="text-xs font-medium text-indigo-600">Filter Tipe Kerja, Gaji &amp; Lokasi</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Card 3: Hotkey / Quick Access */}
+                    <Card className="border-black/5 group p-6 shadow-black/5 sm:col-span-2 sm:rounded-none sm:rounded-bl-xl md:p-12">
+                        <p className="mx-auto mb-12 max-w-md text-balance text-center text-lg font-semibold sm:text-2xl">
+                            Simpan lowongan favorit, akses kapan saja.
+                        </p>
+
+                        <div className="flex justify-center gap-6 border-black/5">
+                            <div className="inset-shadow-sm bg-white border-black/5 flex aspect-square size-16 items-center justify-center rounded-[7px] border  p-3">
+                                <BookmarkCheck className="size-5 text-blue-600" />
+                            </div>
+                        </div>
+                    </Card>
+
+                    {/* Card 4: Integrations / Sources */}
+                    <Card className="border-black/5 group relative shadow-black/5 sm:col-span-3 sm:rounded-none sm:rounded-br-xl">
+                        <CardHeader className="p-6 md:p-12">
+                            <p className="font-bold text-lg">Lowongan dari berbagai sumber terpercaya</p>
+                            <p className="text-muted-foreground mt-2 max-w-sm text-sm">
+                                BisaKerja mengagregasi lowongan dari berbagai platform sehingga kamu tidak perlu berpindah-pindah.
+                            </p>
+                        </CardHeader>
+                        <CardContent className="relative h-fit px-6 pb-6 md:px-12 md:pb-12">
+                            <div className="grid grid-cols-4 gap-2 md:grid-cols-6">
+                                <div className="rounded-(--radius) bg-muted/50 flex aspect-square items-center justify-center border border-black/5 p-3">
+                                    <span className="text-xs font-bold text-gray-500">Indeed</span>
+                                </div>
+                                <div className="rounded-(--radius) bg-muted/50 flex aspect-square items-center justify-center border border-black/5 p-3">
+                                    <span className="text-xs font-bold text-gray-500">LinkedIn</span>
+                                </div>
+                                <div className="rounded-(--radius) bg-muted/50 flex aspect-square items-center justify-center border p-3">
+                                    <span className="text-xs font-bold text-gray-500">Glints</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </section>
+    )
+}
