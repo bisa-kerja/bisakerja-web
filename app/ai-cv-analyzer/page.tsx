@@ -217,55 +217,55 @@ const analysisAspects = [
 
 const testimonials = [
   {
-    text: "Analisisnya jelas banget. Aku langsung tahu bagian pengalaman mana yang harus diperbaiki supaya lebih cocok dengan posisi yang aku incar.",
+    text: "The analysis is extremely clear. I immediately knew which parts of my experience needed improvement to better align with my target role.",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
     name: "Nadya Prameswari",
     role: "Fresh Graduate",
   },
   {
-    text: "Biasanya bingung mulai revisi CV dari mana. Di sini rekomendasinya spesifik, mulai dari kata kunci, struktur, sampai kalimat yang kurang kuat.",
+    text: "Usually, I'm confused about where to start revising my CV. Here, the recommendations are specific, ranging from keywords and structure to weak phrasing.",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
     name: "Rizky Aditya",
     role: "Software Engineer",
   },
   {
-    text: "Fitur ini bantu aku menyesuaikan CV untuk lowongan product analyst. Setelah revisi, CV-ku terasa jauh lebih rapi dan fokus.",
+    text: "This feature helped me tailor my CV for product analyst openings. After the revision, my CV felt much more organized and focused.",
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
     name: "Aulia Rahman",
     role: "Product Analyst",
   },
   {
-    text: "Yang paling kepake buatku adalah insight keyword ATS. Aku jadi bisa menulis skill dan pengalaman dengan bahasa yang lebih relevan.",
+    text: "The most useful part for me was the ATS keyword insights. I was able to write about my skills and experience using much more relevant terminology.",
     image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&q=80",
     name: "Dimas Saputra",
     role: "Data Analyst",
   },
   {
-    text: "Prosesnya cepat, tapi hasilnya detail. Cocok buat cek CV sebelum submit lamaran supaya tidak cuma mengandalkan feeling.",
+    text: "The process is fast, yet highly detailed. It is perfect for checking your CV before submitting an application so you don't just rely on guesswork.",
     image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80",
     name: "Karina Salsabila",
     role: "Marketing Associate",
   },
   {
-    text: "Aku suka karena rekomendasinya actionable. Bukan sekadar skor, tapi ada arahan jelas bagian mana yang perlu ditulis ulang.",
+    text: "I love that the recommendations are actionable. It's not just a score, but there is clear guidance on which parts need rewriting.",
     image: "https://images.unsplash.com/photo-1530268729831-4b0b9e170218?auto=format&fit=crop&w=120&q=80",
     name: "Bagus Pratama",
     role: "UI/UX Designer",
   },
   {
-    text: "Membantu banget untuk career switcher. CV-ku jadi lebih menonjolkan transferable skills dan pengalaman yang paling relevan.",
+    text: "Very helpful for career switchers. My CV does a much better job highlighting transferable skills and the most relevant experience now.",
     image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=120&q=80",
     name: "Maya Kartika",
     role: "Business Analyst",
   },
   {
-    text: "Setelah pakai analyzer ini, aku jadi paham kenapa CV sebelumnya kurang kebaca ATS. Revisi berikutnya jauh lebih terarah.",
+    text: "After using this analyzer, I finally understand why my previous CV was barely readable by ATS. The next revision will be much more targeted.",
     image: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=120&q=80",
     name: "Fajar Nugroho",
     role: "Operations Specialist",
   },
   {
-    text: "Sebagai mentor, aku sering rekomendasikan ini ke mentee karena output-nya praktis dan mudah dipahami untuk pemula.",
+    text: "As a mentor, I often recommend this to my mentees because the output is practical and very easy for beginners to understand.",
     image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
     name: "Intan Lestari",
     role: "Career Mentor",
@@ -278,29 +278,29 @@ const thirdColumn = testimonials.slice(6, 9);
 
 const faqItems = [
   {
-    question: "Apa itu CV ATS Checker?",
+    question: "What is a CV ATS Checker?",
     answer:
-      "CV ATS Checker adalah alat yang menganalisis CV kamu untuk memastikan kompatibilitas dengan Applicant Tracking System (ATS) — software yang digunakan perusahaan untuk menyaring lamaran kerja secara otomatis. Alat ini memeriksa format, kata kunci, dan struktur CV agar peluang kamu lolos screening awal lebih besar.",
+      "A CV ATS Checker is a tool that analyzes your CV to ensure compatibility with Applicant Tracking Systems (ATS) — software used by companies to screen job applications automatically. This tool checks the format, keywords, and structure of your CV to increase your chances of passing the initial screening.",
   },
   {
-    question: "Bagaimana cara optimasi CV agar ATS friendly?",
+    question: "How do I optimize my CV to be ATS-friendly?",
     answer:
-      "Gunakan format yang sederhana tanpa tabel atau kolom, pilih font standar, sertakan kata kunci yang relevan dari deskripsi pekerjaan, dan gunakan heading yang jelas seperti 'Pengalaman Kerja' dan 'Pendidikan'. Hindari penggunaan gambar, ikon, atau grafik yang tidak bisa dibaca ATS.",
+      "Use a simple format without tables or columns, choose standard fonts, include relevant keywords from the job description, and use clear headings like 'Work Experience' and 'Education'. Avoid using images, icons, or graphics that cannot be read by an ATS.",
   },
   {
-    question: "Bagaimana mengetahui bahasa CV sudah sesuai dengan pekerjaan yang dilamar?",
+    question: "How do I know if my CV's language matches the job I'm applying for?",
     answer:
-      "Bandingkan kata kunci dan terminologi di CV kamu dengan yang ada di job description. AI CV Analyzer kami akan menganalisis kesesuaian bahasa dan memberikan rekomendasi kata kunci yang perlu ditambahkan agar CV kamu lebih relevan dengan posisi yang dilamar.",
+      "Compare the keywords and terminology in your CV with those in the job description. Our AI CV Analyzer will analyze the language match and provide keyword recommendations to add, making your CV more relevant to the target position.",
   },
   {
-    question: "Format CV apa yang bagus untuk ATS?",
+    question: "What CV format is best for ATS?",
     answer:
-      "Format terbaik untuk ATS adalah PDF atau DOCX dengan layout satu kolom, tanpa header/footer, tanpa tabel kompleks, dan menggunakan font standar seperti Arial, Calibri, atau Times New Roman. Pastikan ukuran file tidak lebih dari 5MB.",
+      "The best format for ATS is PDF or DOCX with a single-column layout, no headers/footers, no complex tables, and using standard fonts like Arial, Calibri, or Times New Roman. Make sure the file size does not exceed 5MB.",
   },
   {
-    question: "Berapa skor ATS yang bagus untuk CV?",
+    question: "What is a good ATS score for a CV?",
     answer:
-      "Skor ATS yang baik umumnya di atas 75%. Skor di atas 85% dianggap sangat baik dan meningkatkan peluang CV kamu untuk lolos tahap screening otomatis. Namun, skor ini hanyalah panduan — isi dan relevansi CV dengan posisi yang dilamar tetap menjadi faktor utama.",
+      "A good ATS score is generally above 75%. A score above 85% is considered excellent and significantly increases your chances of passing automated screening. However, this score is only a guide — the actual content and relevance of your CV to the position remain the key factors.",
   },
 ];
 
@@ -334,7 +334,7 @@ function FAQItem({ item, isOpen, onToggle }: { item: (typeof faqItems)[0]; isOpe
 /* ─── Main Page ─── */
 export default function AICVAnalyzer() {
   const router = useRouter();
-  const [selectedLanguage, setSelectedLanguage] = useState<"en" | "id">("id");
+  const [selectedLanguage, setSelectedLanguage] = useState<"en" | "id">("en");
   const [selectedPurpose, setSelectedPurpose] = useState<"job" | "scholarship">("job");
   const [activeAspect, setActiveAspect] = useState(0);
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
@@ -446,11 +446,11 @@ export default function AICVAnalyzer() {
         <div className="relative max-w-[900px] mx-auto flex items-center justify-between gap-8">
           <div className="flex-1 text-left">
             <h1 className="text-[28px] md:text-[34px] font-bold text-white leading-relaxed">
-              Tingkatkan Peluang Lolos Screening<br/>
-              <span className="text-yellow-300">CV ATS Sebesar 73%</span>
+              Increase Your Chances of Passing<br/>
+              <span className="text-yellow-300">CV ATS Screening by 73%</span>
             </h1>
             <p className="mt-3 text-blue-100 text-base md:text-lg max-w-xl leading-relaxed">
-              Analisis CV kamu dengan AI dan dapatkan rekomendasi spesifik untuk meningkatkan peluang lolos screening ATS.
+              Analyze your CV with AI and get specific recommendations to increase your chances of passing ATS screening.
             </p>
           </div>
           <div className="block max-[891px]:hidden shrink-0 absolute -bottom-36 -right-24">
@@ -594,7 +594,7 @@ export default function AICVAnalyzer() {
                   : "bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
               }`}
             >
-              Review Sekarang
+              Review Now
             </button>
           </div>
         </div>
@@ -603,7 +603,7 @@ export default function AICVAnalyzer() {
           {/* ─── FAQ Section ─── */}
       <section className="py-14 px-6 bg-white">
         <h2 className="text-[20px] md:text-[24px] font-bold text-gray-900 text-center mb-8">
-          Semua yang Perlu Kamu Ketahui Tentang CV ATS
+          Everything You Need to Know About CV ATS
         </h2>
 
         <div className="max-w-[720px] mx-auto flex flex-col gap-3">
@@ -630,10 +630,10 @@ export default function AICVAnalyzer() {
           >
 
             <h2 className="text-[22px] sm:text-[26px] md:text-[32px] font-bold tracking-tight mt-5 text-gray-900">
-              Apa Kata Pengguna BisaKerja
+              What BisaKerja Users Are Saying
             </h2>
             <p className="text-center mt-4 text-[14px] text-gray-600 leading-relaxed">
-              Cerita dari pengguna yang berhasil membuat CV mereka lebih rapi, relevan, dan siap melewati screening ATS.
+              Stories from users who successfully made their CVs neater, more relevant, and ready to pass ATS screening.
             </p>
           </motion.div>
 

@@ -41,10 +41,10 @@ export function Features() {
             <div className="mx-auto max-w-5xl px-6">
                 <div className="mb-12 text-center">
                     <h2 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">
-                        Semua yang kamu butuhkan, dalam satu platform.
+                        Everything you need, in one platform.
                     </h2>
                     <p className="mt-4 text-base text-gray-600">
-                        Dari pencarian lowongan hingga evaluasi CV — BisaKerja hadir untuk setiap tahap perjalanan kariermu.
+                        From job search to CV evaluation — BisaKerja is here for every step of your career journey.
                     </p>
                 </div>
 
@@ -53,9 +53,9 @@ export function Features() {
                     <Card className="group overflow-hidden shadow-black/5 sm:col-span-3 sm:rounded-none sm:rounded-tl-xl border-black/5">
                         <CardHeader>
                             <div className="md:p-6">
-                                <p className="font-bold text-lg">Analisis CV dengan Kecerdasan Buatan</p>
+                                <p className="font-bold text-lg">AI-Powered CV Analysis</p>
                                 <p className="text-muted-foreground mt-3 max-w-sm text-sm">
-                                    Upload CV-mu dan dapatkan skor kecocokan, saran perbaikan, serta highlight bagian yang perlu diperbarui semuanya instan.
+                                    Upload your CV and get a match score, improvement tips, and highlights of sections that need updating — all instantly.
                                 </p>
                             </div>
                         </CardHeader>
@@ -79,7 +79,7 @@ export function Features() {
                     {/* Card 2: Smart Filters - small right */}
                     <Card className="group overflow-hidden shadow-zinc-950/5 sm:col-span-2 sm:rounded-none sm:rounded-tr-xl border-black/5 flex flex-col justify-between">
                         <p className="mx-auto my-6 max-w-md text-balance px-6 text-center text-lg font-semibold sm:text-2xl md:p-6">
-                            Simpan lowongan favorit, dan Tracking lamaran di satu tempat.
+                            Save your favorite jobs and track applications in one place.
                         </p>
 
                         {/* <CardContent className="mt-auto h-fit">
@@ -115,9 +115,9 @@ export function Features() {
                     {/* Card 4: Integrations / Sources */}
                     <Card className="border-black/5 group relative shadow-black/5 sm:col-span-5 sm:rounded-none sm:rounded-br-xl">
                         <CardHeader className="p-6 md:p-12">
-                            <p className="font-bold text-2xl">Lowongan dari berbagai sumber terpercaya</p>
+                            <p className="font-bold text-2xl">Jobs from various trusted sources</p>
                             <p className="text-muted-foreground mt-2 max-w-sm text-sm">
-                                BisaKerja mengagregasi lowongan dari berbagai platform sehingga kamu tidak perlu berpindah-pindah.
+                                BisaKerja aggregates vacancies from multiple platforms so you don't have to jump between websites.
                             </p>
                         </CardHeader>
                         <CardContent className="relative h-fit px-6 pb-6 md:px-12 md:pb-12">

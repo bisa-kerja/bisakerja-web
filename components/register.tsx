@@ -247,15 +247,6 @@ export default function RegisterStep1() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-1.5 mb-7">
-            <div className="flex-1 h-[4px] rounded-full overflow-hidden bg-gray-200 relative">
-              <div className="absolute inset-y-0 left-0 w-full bg-[#2563eb] rounded-full" />
-            </div>
-            <div className="flex-1 h-[4px] bg-gray-200 rounded-full" />
-            <div className="flex-1 h-[4px] bg-gray-200 rounded-full" />
-            <div className="flex-1 h-[4px] bg-gray-200 rounded-full" />
-          </div>
-
           {/* Heading */}
           <h1 className="text-[28px] font-bold text-gray-900 tracking-tight leading-tight mb-1.5">
             Create your account

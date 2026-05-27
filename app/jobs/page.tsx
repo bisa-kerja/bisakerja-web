@@ -44,31 +44,31 @@ function SpinnerIcon() {
 /* ─── Data ─── */
 const filterOptions: { label: string; paramKey: keyof JobSearchParams; options: { label: string; value: string }[] }[] = [
   {
-    label: "Tipe Kerja",
+    label: "Work Type",
     paramKey: "workType",
     options: [
-      { label: "Semua", value: "" },
+      { label: "All", value: "" },
       { label: "Remote", value: "REMOTE" },
       { label: "Hybrid", value: "HYBRID" },
       { label: "On-site", value: "ONSITE" },
     ],
   },
   {
-    label: "Jenis",
+    label: "Employment Type",
     paramKey: "employmentType",
     options: [
-      { label: "Semua", value: "" },
-      { label: "Penuh Waktu", value: "FULL_TIME" },
-      { label: "Kontrak", value: "CONTRACT" },
-      { label: "Paruh Waktu", value: "PART_TIME" },
-      { label: "Magang", value: "INTERNSHIP" },
+      { label: "All", value: "" },
+      { label: "Full Time", value: "FULL_TIME" },
+      { label: "Contract", value: "CONTRACT" },
+      { label: "Part Time", value: "PART_TIME" },
+      { label: "Internship", value: "INTERNSHIP" },
     ],
   },
   {
-    label: "Level",
+    label: "Experience Level",
     paramKey: "experienceLevel",
     options: [
-      { label: "Semua", value: "" },
+      { label: "All", value: "" },
       { label: "Entry Level", value: "ENTRY_LEVEL" },
       { label: "Mid Level", value: "MID_LEVEL" },
       { label: "Senior Level", value: "SENIOR_LEVEL" },
@@ -77,9 +77,9 @@ const filterOptions: { label: string; paramKey: keyof JobSearchParams; options: 
 ];
 
 const sortOptions = [
-  { label: "Terbaru", value: "newest" },
-  { label: "Gaji Tertinggi", value: "salary_highest" },
-  { label: "Gaji Terendah", value: "salary_lowest" },
+  { label: "Newest", value: "newest" },
+  { label: "Highest Salary", value: "salary_highest" },
+  { label: "Lowest Salary", value: "salary_lowest" },
 ];
 
 /* ─── Main Page ─── */
@@ -125,7 +125,7 @@ export default function Home() {
       setJobs(res.data);
       setPagination(res.meta.pagination);
     } catch {
-      setError("Gagal memuat lowongan kerja. Silakan coba lagi.");
+      setError("Failed to load jobs. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -228,11 +228,11 @@ export default function Home() {
         <div className="relative max-w-[1240px] mx-auto flex items-center justify-between gap-8">
           <div className="flex-1 text-left">
             <h1 className="text-[28px] md:text-[34px] font-bold text-white leading-relaxed">
-              Cari Lowongan Kerja Pakai BisaKerja{" "}
-              <span className="text-yellow-300">#LebihPasti</span>
+              Find Jobs Using BisaKerja{" "}
+              <span className="text-yellow-300">#BestMatch</span>
             </h1>
             <p className="mt-3 text-blue-100 text-base md:text-lg max-w-xl leading-relaxed">
-              Temukan ribuan lowongan kerja terbaik yang sesuai dengan keahlian dan minat kamu.
+              Find thousands of the best jobs that match your skills and interests.
             </p>
           </div>
           <div className="hidden md:block shrink-0 absolute -bottom-36 right-0">
@@ -322,7 +322,7 @@ export default function Home() {
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
                 className="flex items-center gap-1.5 text-gray-500 bg-transparent border-none cursor-pointer p-0 text-[13px]"
               >
-                <span>{sortOptions.find((s) => s.value === sort)?.label || "Terbaru"}</span>
+                <span>{sortOptions.find((s) => s.value === sort)?.label || "Newest"}</span>
                 <ChevronDownIcon size={12} />
               </button>
               {showSortDropdown && (
@@ -350,11 +350,11 @@ export default function Home() {
         {pagination && !isLoading && (
           <div className="flex items-center justify-between mt-5">
             <p className="text-sm text-gray-500">
-              Menampilkan <span className="font-semibold text-gray-700">{jobs.length}</span> dari{" "}
-              <span className="font-semibold text-gray-700">{pagination.total.toLocaleString()}</span> lowongan
+              Showing <span className="font-semibold text-gray-700">{jobs.length}</span> of{" "}
+              <span className="font-semibold text-gray-700">{pagination.total.toLocaleString()}</span> jobs
               {keyword && (
                 <span>
-                  {" "}untuk &quot;<span className="text-blue-600 font-medium">{keyword}</span>&quot;
+                  {" "}for &quot;<span className="text-blue-600 font-medium">{keyword}</span>&quot;
                 </span>
               )}
             </p>
@@ -367,7 +367,7 @@ export default function Home() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <SpinnerIcon />
-            <p className="text-sm text-gray-500">Memuat lowongan kerja...</p>
+            <p className="text-sm text-gray-500">Loading jobs...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -383,7 +383,7 @@ export default function Home() {
               onClick={loadJobs}
               className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium border-none cursor-pointer hover:bg-blue-700 transition-colors"
             >
-              Coba Lagi
+              Try Again
             </button>
           </div>
         ) : jobs.length === 0 ? (
@@ -394,7 +394,7 @@ export default function Home() {
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
             </div>
-            <p className="text-sm text-gray-500">Tidak ada lowongan yang ditemukan.</p>
+            <p className="text-sm text-gray-500">No jobs found.</p>
           </div>
         ) : (
           <>
@@ -418,7 +418,7 @@ export default function Home() {
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   className="px-2.5 sm:px-4 py-2 rounded-lg border border-gray-200 bg-white text-xs sm:text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
-                  <span className="hidden sm:inline">← Sebelumnya</span>
+                  <span className="hidden sm:inline">← Previous</span>
                   <span className="sm:hidden">←</span>
                 </button>
                 <div className="flex items-center gap-1">
@@ -465,7 +465,7 @@ export default function Home() {
                   onClick={() => setPage((p) => p + 1)}
                   className="px-2.5 sm:px-4 py-2 rounded-lg border border-gray-200 bg-white text-xs sm:text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
-                  <span className="hidden sm:inline">Selanjutnya →</span>
+                  <span className="hidden sm:inline">Next →</span>
                   <span className="sm:hidden">→</span>
                 </button>
               </div>
