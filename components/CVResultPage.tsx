@@ -1,27 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import JobCard, { type JobCardProps } from "./JobCard";
 
 /* ─── Icon Components ─── */
-function LockIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
-
 function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg
@@ -36,17 +19,6 @@ function ChevronIcon({ open }: { open: boolean }) {
       className={`transition-transform duration-300 ease-in-out ${open ? "rotate-180" : "rotate-0"}`}
     >
       <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
-function SparkleIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-        fill="#F59E0B"
-      />
     </svg>
   );
 }
@@ -116,11 +88,6 @@ const sections = [
     importance: `Work experience is the most critical section of your CV. It demonstrates your practical skills and career progression to potential employers.`,
   },
 ];
-
-const keywordData = {
-  missing: ["Figma Auto-layout", "A/B Testing", "Design Systems"],
-  present: ["User Research", "Wireframing", "Prototyping"],
-};
 
 /* ─── Mock Matched Jobs ─── */
 const matchedJobs: JobCardProps[] = [
@@ -622,7 +589,7 @@ function SectionCard({
 }
 
 /* ─── Main Result Page ─── */
-export default function CVResultPage({ onBack }: { onBack?: () => void }) {
+export default function CVResultPage() {
   const jobFitScore = 76;
   const atsScore = 94;
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
@@ -676,10 +643,13 @@ export default function CVResultPage({ onBack }: { onBack?: () => void }) {
 
       {/* ── Banner ── */}
       <div className="relative w-full h-[160px] md:h-[240px] max-w-[1048px] mx-auto overflow-hidden bg-white mt-4 md:mt-8 px-4 md:px-0">
-        <img
+        <Image
           src="/assets/banner/result-banner.png"
           alt="Result Banner"
           className="w-full h-full object-cover rounded-xl"
+          width={1048}
+          height={240}
+          priority
         />
         {/* Dark gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-transparent rounded-xl " />

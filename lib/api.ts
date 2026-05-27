@@ -59,7 +59,7 @@ export interface AuthResponse {
   } | null;
   error?: {
     code: string;
-    details?: any;
+    details?: unknown;
     requestId?: string;
   };
   meta: unknown;
@@ -84,8 +84,8 @@ export interface PreferencesUpsertRequest {
 export interface PreferencesResponse {
   success: boolean;
   message: string;
-  data: any;
-  meta: any;
+  data: unknown;
+  meta: unknown;
 }
 
 // Jobs
@@ -275,7 +275,7 @@ export interface APIErrorResponse {
   data: null;
   error: {
     code: string;
-    details?: any;
+    details?: unknown;
     requestId?: string;
   };
 }
@@ -359,9 +359,9 @@ async function apiFetch<T>(
 export class APIError extends Error {
   code: string;
   status: number;
-  details?: any;
+  details?: unknown;
 
-  constructor(message: string, code: string, status: number, details?: any) {
+  constructor(message: string, code: string, status: number, details?: unknown) {
     super(message);
     this.name = "APIError";
     this.code = code;

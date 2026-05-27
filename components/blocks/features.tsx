@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { FileSearch, BookmarkCheck, SlidersHorizontal } from 'lucide-react'
+
 import Image from 'next/image'
 
 const trustedSources = [
@@ -55,7 +55,7 @@ export function Features() {
                             <div className="md:p-6">
                                 <p className="font-bold text-lg">AI-Powered CV Analysis</p>
                                 <p className="text-muted-foreground mt-3 max-w-sm text-sm">
-                                    Upload your CV and get a match score, improvement tips, and highlights of sections that need updating — all instantly.
+                                    Upload your CV and get a match score, suggestions for improvement, and highlights of sections that need updates — all instantly.
                                 </p>
                             </div>
                         </CardHeader>
@@ -79,7 +79,7 @@ export function Features() {
                     {/* Card 2: Smart Filters - small right */}
                     <Card className="group overflow-hidden shadow-zinc-950/5 sm:col-span-2 sm:rounded-none sm:rounded-tr-xl border-black/5 flex flex-col justify-between">
                         <p className="mx-auto my-6 max-w-md text-balance px-6 text-center text-lg font-semibold sm:text-2xl md:p-6">
-                            Save your favorite jobs and track applications in one place.
+                            Save your favorite jobs and track applications all in one place.
                         </p>
 
                         {/* <CardContent className="mt-auto h-fit">
@@ -115,9 +115,9 @@ export function Features() {
                     {/* Card 4: Integrations / Sources */}
                     <Card className="border-black/5 group relative shadow-black/5 sm:col-span-5 sm:rounded-none sm:rounded-br-xl">
                         <CardHeader className="p-6 md:p-12">
-                            <p className="font-bold text-2xl">Jobs from various trusted sources</p>
+                            <p className="font-bold text-2xl">Jobs from trusted sources</p>
                             <p className="text-muted-foreground mt-2 max-w-sm text-sm">
-                                BisaKerja aggregates vacancies from multiple platforms so you don't have to jump between websites.
+                                BisaKerja aggregates job listings from various platforms so you don&apos;t have to keep switching.
                             </p>
                         </CardHeader>
                         <CardContent className="relative h-fit px-6 pb-6 md:px-12 md:pb-12">

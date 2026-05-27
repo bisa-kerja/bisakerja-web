@@ -57,10 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = getAccessToken();
     const stored = getStoredUser();
-    if (token && stored?.user) {
-      setUser(stored.user);
-    }
-    setIsLoading(false);
+    setTimeout(() => {
+      if (token && stored?.user) {
+        setUser(stored.user);
+      }
+      setIsLoading(false);
+    }, 0);
   }, []);
 
   const login = useCallback((authData: NonNullable<AuthResponse["data"]>) => {

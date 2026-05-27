@@ -97,7 +97,9 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     const stored = getStoredUser();
     if (stored?.user?.email) {
-      setUserEmail(stored.user.email);
+      setTimeout(() => {
+        setUserEmail(stored.user.email);
+      }, 0);
     }
   }, []);
 

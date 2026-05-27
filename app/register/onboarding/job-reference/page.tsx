@@ -195,7 +195,7 @@ export default function JobReferencePage() {
   const [cities, setCities] = useState<
     { id: string; province_id: string; name: string }[]
   >([]);
-  const [isLoadingProvinces, setIsLoadingProvinces] = useState(false);
+  const [isLoadingProvinces, setIsLoadingProvinces] = useState(true);
   const [isLoadingCities, setIsLoadingCities] = useState(false);
   const [selectedArrangements, setSelectedArrangements] = useState([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -204,7 +204,6 @@ export default function JobReferencePage() {
 
   // Fetch all Indonesian provinces from the official wilayah API on mount
   useEffect(() => {
-    setIsLoadingProvinces(true);
     fetch("/api/wilayah/provinces")
       .then((res) => res.json())
       .then((data: { id: string; name: string }[]) => {
@@ -219,9 +218,6 @@ export default function JobReferencePage() {
   // Fetch cities/regencies whenever the selected province ID changes
   useEffect(() => {
     if (!selectedProvinceId) return;
-    setIsLoadingCities(true);
-    setCities([]);
-    setCity("");
     fetch(`/api/wilayah/regencies/${selectedProvinceId}`)
       .then((res) => res.json())
       .then((data: { id: string; province_id: string; name: string }[]) => {
@@ -318,9 +314,10 @@ export default function JobReferencePage() {
 
       await updatePreferences(payload);
       router.push("/register/onboarding/verify-email");
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       setApiError(
-        err.message || "Failed to save preferences. Please try again.",
+        error.message || "Failed to save preferences. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -530,6 +527,11 @@ export default function JobReferencePage() {
                       const found = provinces.find((p) => p.id === id);
                       setSelectedProvinceId(id);
                       setProvince(found?.name ?? "");
+                      if (id) {
+                        setIsLoadingCities(true);
+                        setCities([]);
+                        setCity("");
+                      }
                     }}
                     disabled={isLoadingProvinces}
                     className="w-full h-11 px-3.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none appearance-none cursor-pointer focus:border-[#2B7FE0] focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"

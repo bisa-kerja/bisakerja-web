@@ -128,7 +128,7 @@ export default function Navbar() {
       <div className="flex items-center justify-between px-4 md:px-8 h-[60px]">
         {/* Logo */}
         <div className="flex items-center gap-8">
-          <a href="/">
+          <Link href="/">
             <Image
               src={logo}
               alt="Logo"
@@ -136,13 +136,13 @@ export default function Navbar() {
               height={130}
               className="md:w-[150px]"
             />
-          </a>
+          </Link>
         </div>
 
         {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.label}
               href={link.href}
               className={`text-sm font-medium no-underline transition-colors duration-200
@@ -150,7 +150,7 @@ export default function Navbar() {
                 `}
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -220,18 +220,18 @@ export default function Navbar() {
               </div>
             ) : (
               <>
-                <a
+                <Link
                   href="/login"
                   className="bg-blue-600 text-white px-4 py-2 rounded-md border-none text-[13px] font-medium cursor-pointer whitespace-nowrap transition-all duration-200"
                 >
                   Login
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/register"
                   className="bg-white border border-gray-200 text-blue-600 px-4 py-2 rounded-md text-[13px] font-medium cursor-pointer whitespace-nowrap transition-all duration-200"
                 >
                   Register
-                </a>
+                </Link>
               </>
             )}
           </div>
@@ -255,14 +255,14 @@ export default function Navbar() {
       >
         <div className="px-4 py-4 flex flex-col gap-1">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.label}
               href={link.href}
               onClick={() => setMobileMenuOpen(false)}
               className="text-[15px] font-medium text-gray-700 no-underline py-3 px-3 rounded-lg hover:bg-gray-50 transition-colors"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
 
           <div className="border-t border-gray-100 my-2" />
@@ -291,20 +291,20 @@ export default function Navbar() {
             </>
           ) : (
             <div className="flex flex-col gap-2 mt-1">
-              <a
+              <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
                 className="bg-blue-600 text-white px-4 py-2.5 rounded-lg border-none text-[14px] font-semibold cursor-pointer text-center no-underline transition-all duration-200"
               >
                 Masuk
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/register"
                 onClick={() => setMobileMenuOpen(false)}
                 className="bg-white border border-gray-200 text-blue-600 px-4 py-2.5 rounded-lg text-[14px] font-semibold cursor-pointer text-center no-underline transition-all duration-200"
               >
                 Daftar
-              </a>
+              </Link>
             </div>
           )}
         </div>

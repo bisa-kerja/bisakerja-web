@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const BLOG_CARDS = [
   {
@@ -43,7 +44,7 @@ export default function Example() {
                 "w-full max-w-72 transition duration-300 hover:-translate-y-0.5",
               )}
             >
-              <img className="rounded-xl" src={card.image} alt="" />
+              <Image className="rounded-xl" src={card.image} alt={card.title} width={288} height={192} unoptimized />
               <h3 className="mt-3 text-base font-medium text-slate-900">
                 {card.title}
               </h3>

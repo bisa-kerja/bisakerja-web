@@ -9,16 +9,6 @@ import { TestimonialsColumn } from "@/components/ui/testimonials-columns-1";
 import { motion } from "motion/react";
 
 /* ─── Icon Components ─── */
-function UploadIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="17 8 12 3 7 8" />
-      <line x1="12" y1="3" x2="12" y2="15" />
-    </svg>
-  );
-}
-
 
 function TrashIcon() {
   return (
@@ -39,17 +29,6 @@ function CloudUploadIcon() {
   );
 }
 
-function DocumentInputIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <path d="M12 18v-6" />
-      <path d="m9 15 3-3 3 3" />
-    </svg>
-  );
-}
-
 function FileIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -57,14 +36,6 @@ function FileIcon() {
       <polyline points="14 2 14 8 20 8" />
       <line x1="16" y1="13" x2="8" y2="13" />
       <line x1="16" y1="17" x2="8" y2="17" />
-    </svg>
-  );
-}
-
-function StarIcon({ filled = true }: { filled?: boolean }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? "#FBBF24" : "none"} stroke="#FBBF24" strokeWidth="2">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   );
 }
@@ -91,14 +62,6 @@ function SearchIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
-
-function SparkleIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L14.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
     </svg>
   );
 }
@@ -198,21 +161,6 @@ function LoadingOverlay({ currentStep }: { currentStep: number }) {
 
 /* ─── Data ─── */
 const suggestedRoles = ["Software Engineer", "Product Manager", "Data Analyst", "UI/UX Designer"];
-
-const analysisAspects = [
-  "Overall Impression",
-  "Contact Information",
-  "Relevant Skill",
-  "Professional Summary",
-  "Work Experience",
-  "Achievement",
-  "Education and Certification",
-  "Organizational Activity",
-  "Consistent & Error-free Writing",
-  "Additional Section",
-  "Keywords",
-  "Career Recommendation",
-];
 
 
 const testimonials = [
@@ -334,16 +282,11 @@ function FAQItem({ item, isOpen, onToggle }: { item: (typeof faqItems)[0]; isOpe
 /* ─── Main Page ─── */
 export default function AICVAnalyzer() {
   const router = useRouter();
-  const [selectedLanguage, setSelectedLanguage] = useState<"en" | "id">("en");
-  const [selectedPurpose, setSelectedPurpose] = useState<"job" | "scholarship">("job");
-  const [activeAspect, setActiveAspect] = useState(0);
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: string } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [targetRoles, setTargetRoles] = useState<string[]>([]);
   const [roleSearch, setRoleSearch] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);

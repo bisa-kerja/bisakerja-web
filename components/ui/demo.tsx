@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { BadgeCheck } from "lucide-react";
 
 export type CardT = {
@@ -44,7 +45,7 @@ const DEFAULT_DATA: CardT[] = [
 const Card = ({ card }: { card: CardT }) => (
   <div className="mx-4 w-72 shrink-0 rounded-lg bg-white p-4 shadow transition-all duration-200 hover:shadow-lg">
     <div className="flex gap-2">
-      <img className="size-11 rounded-full object-cover" src={card.image} alt={card.name} />
+      <Image className="size-11 rounded-full object-cover" src={card.image} alt={card.name} width={44} height={44} unoptimized />
       <div className="flex flex-col">
         <div className="flex items-center gap-1">
           <p className="font-medium text-gray-950">{card.name}</p>

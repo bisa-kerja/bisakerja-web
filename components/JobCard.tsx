@@ -144,7 +144,6 @@ export default function JobCard({
 }) {
   const router = useRouter();
   const [isBookmarked, setIsBookmarked] = useState(defaultBookmarked);
-  const [bookmarkId, setBookmarkId] = useState(initialBookmarkId);
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
   const [bookmarkError, setBookmarkError] = useState<string | null>(null);
 
@@ -174,14 +173,12 @@ export default function JobCard({
       if (isBookmarked) {
         setIsBookmarked(false);
         await deleteBookmark(job.id);
-        setBookmarkId(undefined);
         onBookmarkChange?.(job.id, false);
         return;
       }
 
       const response = await createBookmark(job.id);
       setIsBookmarked(true);
-      setBookmarkId(response.data.id);
       onBookmarkChange?.(job.id, true, response.data.id);
     } catch (error) {
       if (error instanceof APIError && error.status === 401) {
