@@ -328,12 +328,12 @@ export default function JobReferencePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf9f7]" style={{ colorScheme: "light" }}>
+    <div className="min-h-screen bg-white" style={{ colorScheme: "light" }}>
       {/* ─── Main Content ─── */}
       <div className="max-w-[760px] mx-auto px-5 sm:px-8 pt-10 pb-16">
         {/* Step & Progress */}
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs text-gray-400 font-medium">Step 3 of 4</p>
+          <p className="text-xs text-gray-400 font-medium">Step 2 of 3</p>
           <p className="text-xs text-gray-400 font-medium">
             Career Preferences
           </p>
@@ -341,7 +341,6 @@ export default function JobReferencePage() {
 
         {/* Segmented Progress Bar */}
         <div className="flex items-center gap-1.5 mb-10">
-          <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
           <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
           <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
           <div className="flex-1 h-[4px] bg-gray-200 rounded-full" />

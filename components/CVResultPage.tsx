@@ -677,7 +677,7 @@ export default function CVResultPage({ onBack }: { onBack?: () => void }) {
       {/* ── Banner ── */}
       <div className="relative w-full h-[160px] md:h-[240px] max-w-[1048px] mx-auto overflow-hidden bg-white mt-4 md:mt-8 px-4 md:px-0">
         <img
-          src="/assets/result-banner.png"
+          src="/assets/banner/result-banner.png"
           alt="Result Banner"
           className="w-full h-full object-cover rounded-xl"
         />

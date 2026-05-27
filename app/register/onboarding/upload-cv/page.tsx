@@ -128,7 +128,7 @@ export default function UploadCVStep() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#f3f2ef] relative overflow-hidden" style={{ colorScheme: "light" }}>
+    <div className="flex items-center justify-center min-h-screen bg-white relative overflow-hidden" style={{ colorScheme: "light" }}>
       {/* Background gradient accent (top-left blue blur) */}
       <div
         className="absolute top-0 left-0 w-[420px] h-[420px] rounded-full opacity-40 pointer-events-none"
@@ -142,7 +142,7 @@ export default function UploadCVStep() {
        
           {/* Step & Progress */}
         <div className="w-full flex items-center justify-between mb-2 gap-2">
-          <p className="text-xs text-gray-400 font-medium">Step 2 of 4</p>
+          <p className="text-xs text-gray-400 font-medium">Step 1 of 3</p>
           <p className="text-xs text-gray-400 font-medium">Upload CV</p>
         </div>
 
@@ -150,7 +150,6 @@ export default function UploadCVStep() {
         <div className="w-full flex items-center gap-1.5 mb-10">
           <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
           <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
-          <div className="flex-1 h-[4px] bg-gray-200 rounded-full" />
           <div className="flex-1 h-[4px] bg-gray-200 rounded-full" />
         </div>
 

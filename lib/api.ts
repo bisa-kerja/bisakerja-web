@@ -23,6 +23,23 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface EmptySuccessResponse {
+  success: boolean;
+  message: string;
+  data: null;
+  meta: unknown;
+}
+
 export interface AuthResponse {
   success: boolean;
   message: string;
@@ -371,6 +388,24 @@ export async function loginUser(payload: LoginPayload): Promise<AuthResponse> {
       identifier: payload.email,
       password: payload.password,
     }),
+  });
+}
+
+export async function forgotPassword(
+  payload: ForgotPasswordPayload,
+): Promise<EmptySuccessResponse> {
+  return apiFetch<EmptySuccessResponse>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function resetPassword(
+  payload: ResetPasswordPayload,
+): Promise<EmptySuccessResponse> {
+  return apiFetch<EmptySuccessResponse>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
 

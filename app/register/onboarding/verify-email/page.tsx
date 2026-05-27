@@ -301,11 +301,10 @@ export default function VerifyEmailPage() {
         <div className="flex flex-1 flex-col justify-center px-6 sm:px-12 lg:px-0 lg:ml-[72px] w-full max-w-[480px] mx-auto lg:mx-0 lg:max-w-[420px]">
           {/* Step & Progress */}
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-gray-400 font-medium">Step 4 of 4</p>
+            <p className="text-xs text-gray-400 font-medium">Step 3 of 3</p>
             <p className="text-xs text-gray-400 font-medium">Verify Email</p>
           </div>
           <div className="flex items-center gap-1.5 mb-10">
-            <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
             <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
             <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
             <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />

@@ -247,11 +247,6 @@ export default function RegisterStep1() {
             </Link>
           </div>
 
-          {/* Step & Progress */}
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-gray-400 font-medium">Step 1 of 4</p>
-            <p className="text-xs text-gray-400 font-medium">Create Account</p>
-          </div>
           <div className="flex items-center gap-1.5 mb-7">
             <div className="flex-1 h-[4px] rounded-full overflow-hidden bg-gray-200 relative">
               <div className="absolute inset-y-0 left-0 w-full bg-[#2563eb] rounded-full" />
