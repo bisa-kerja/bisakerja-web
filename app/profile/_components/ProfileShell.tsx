@@ -7,13 +7,14 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/lib/auth";
 import {
   BookmarkIcon,
+  ChartLineIcon,
   FileTextIcon,
   HelpCircleIcon,
   LogOutIcon,
   UserIcon,
 } from "./ProfileIcons";
 
-type ProfileSection = "profile" | "applications" | "saved-jobs";
+type ProfileSection = "profile" | "applications" | "saved-jobs" | "cv-history";
 
 interface ProfileShellProps {
   activeSection: ProfileSection;
@@ -58,6 +59,12 @@ export function ProfileShell({
       href: "/profile/saved-jobs",
       label: "Saved Jobs",
       icon: <BookmarkIcon className="w-5 h-5" />,
+    },
+    {
+      key: "cv-history",
+      href: "/profile/cv-analyze-history",
+      label: "CV Analyze History",
+      icon: <ChartLineIcon className="w-5 h-5" />,
     },
   ] as const;
 

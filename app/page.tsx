@@ -189,21 +189,21 @@ export default function Home() {
               </div>
             }
           >
-            <div className="relative h-full w-full bg-blue-950">
-              <Image
-                src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1600&q=80"
-                alt="Modern workspace for searching jobs and preparing CVs"
-                fill
-                priority
-                sizes="(min-width: 1024px) 1024px, 100vw"
-                className="object-cover opacity-80"
+            <div className="relative h-full w-full">
+              <video
+                src="/screenshots/hero.MOV"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 h-full w-full object-cover opacity-80"
               />
               <div className="absolute -bottom-0 -right-10 hidden sm:block">
                 <Image
                   src="/maskots/wave.png"
                   alt="BisaKerja Statistics Mascot"
-                  width={320}
-                  height={320}
+                  width={220}
+                  height={220}
                   priority
                   className="drop-shadow-2xl"
                   style={{ filter: "drop-shadow(0 10px 30px rgba(0,0,0,0.2))" }}

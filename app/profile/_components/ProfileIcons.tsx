@@ -59,6 +59,26 @@ export function BookmarkIcon({ className }: { className?: string }) {
   );
 }
 
+export function ChartLineIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 3v18h18" />
+      <path d="m7 15 4-4 3 3 5-6" />
+      <path d="M18 8h1v1" />
+    </svg>
+  );
+}
+
 export function HelpCircleIcon({ className }: { className?: string }) {
   return (
     <svg

@@ -351,6 +351,82 @@ export interface CVAnalysisResult {
   analyzedAt: string;
 }
 
+export type CVAnalyzerInputMode = "UPLOAD" | string;
+export type CVAnalyzerCompareSource = "JOB_SEARCH" | "BOOKMARK" | string;
+
+export interface CVAnalyzerResultHistoryItem {
+  id: string;
+  schemaVersion: string;
+  analyzedAt: string;
+  inputMode: CVAnalyzerInputMode;
+  compareSource: CVAnalyzerCompareSource;
+  jobFitAlignment: {
+    score: number;
+  };
+  atsFriendliness: {
+    score: number;
+  };
+  overallImpressionPreview: string;
+  topActionablesPreview: string[];
+  model: {
+    name: string;
+    version: string;
+  };
+  cvFile: {
+    id: string;
+    originalFileName: string;
+    uploadedAt: string;
+  } | null;
+}
+
+export interface CVAnalyzerResultsSearchParams {
+  page?: number;
+  limit?: number;
+  sortBy?: "analyzedAt" | string;
+  sortOrder?: "asc" | "desc";
+  cvFileId?: string;
+  schemaVersion?: string;
+  inputMode?: CVAnalyzerInputMode;
+  compareSource?: CVAnalyzerCompareSource;
+}
+
+export interface CVAnalyzerResultsResponse {
+  success: boolean;
+  message: string;
+  data: CVAnalyzerResultHistoryItem[];
+  meta: {
+    pagination: APIPagination;
+    filters: Record<string, unknown>;
+    sort: string;
+  };
+}
+
+export interface CVAnalyzerResultDetailResponse {
+  success: boolean;
+  message: string;
+  data: {
+    analysisResult: CVAnalysisResult;
+    context: {
+      language: string;
+      inputMode: CVAnalyzerInputMode;
+      compareSource: CVAnalyzerCompareSource;
+      cvFile: {
+        id: string;
+        originalFileName: string;
+        uploadedAt: string;
+      } | null;
+      inputSummary: {
+        jobRoles?: string[];
+        file?: {
+          mimeType: string;
+          sizeBytes: number;
+        };
+      } | null;
+    };
+  };
+  meta: unknown;
+}
+
 export interface CVAnalyzerResponse {
   success: boolean;
   message: string;
@@ -364,7 +440,7 @@ export interface CVAnalyzerResponse {
 
 export interface AnalyzeCVPayload {
   jobRoles: string[];
-  cvFile: File;
+  cvFile?: File;
   cvFileId?: string | null;
   language?: string;
 }
@@ -735,12 +811,42 @@ export async function analyzeCV(
     formData.append("cvFileId", payload.cvFileId);
   }
 
-  formData.append("cvFile", payload.cvFile);
+  if (payload.cvFile) {
+    formData.append("cvFile", payload.cvFile);
+  }
 
   return apiFetch<CVAnalyzerResponse>("/ai/cv-analyzer", {
     method: "POST",
     body: formData,
   });
+}
+
+export async function fetchCVAnalyzerResults(
+  params: CVAnalyzerResultsSearchParams = {},
+): Promise<CVAnalyzerResultsResponse> {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      query.set(key, String(value));
+    }
+  });
+
+  if (!query.has("page")) query.set("page", "1");
+  if (!query.has("limit")) query.set("limit", "10");
+  if (!query.has("sortBy")) query.set("sortBy", "analyzedAt");
+  if (!query.has("sortOrder")) query.set("sortOrder", "desc");
+
+  return apiFetch<CVAnalyzerResultsResponse>(
+    `/ai/cv-analyzer/results?${query.toString()}`,
+  );
+}
+
+export async function fetchCVAnalyzerResultDetail(
+  resultId: string,
+): Promise<CVAnalyzerResultDetailResponse> {
+  return apiFetch<CVAnalyzerResultDetailResponse>(
+    `/ai/cv-analyzer/results/${resultId}`,
+  );
 }
 
 /* ─── User API ─── */

@@ -28,7 +28,7 @@ const employmentTypeMap: Record<string, string> = {
 const experienceLevelMap: Record<string, string> = {
   ENTRY_LEVEL: "Entry Level",
   MID_LEVEL: "Mid Level",
-  SENIOR_LEVEL: "Senior Level",
+  SENIOR: "Senior Level",
   LEAD: "Lead",
   MANAGER: "Manager",
   DIRECTOR: "Director",

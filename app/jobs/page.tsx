@@ -71,7 +71,7 @@ const filterOptions: { label: string; paramKey: keyof JobSearchParams; options: 
       { label: "All", value: "" },
       { label: "Entry Level", value: "ENTRY_LEVEL" },
       { label: "Mid Level", value: "MID_LEVEL" },
-      { label: "Senior Level", value: "SENIOR_LEVEL" },
+      { label: "Senior Level", value: "SENIOR" },
     ],
   },
 ];

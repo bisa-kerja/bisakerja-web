@@ -1,30 +1,35 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
-import { CheckCircle2, Loader2, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  CheckCircle2,
+  FileText,
+  Loader2,
+  Plus,
+  RotateCcw,
+  Save,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   APIError,
+  fetchActiveCVFile,
   fetchProfile,
   updateProfile,
   updateProfileEducation,
   updateProfileExperience,
-  updateProfilePhoto,
   updateProfileSkills,
+  uploadCVFile,
+  type ActiveCVFile,
   type ProfileData,
 } from "@/lib/api";
 import {
-  CameraIcon,
   MailIcon,
   PhoneIcon,
 } from "./_components/ProfileIcons";
 import { ProfileShell, Skeleton } from "./_components/ProfileShell";
-
-const CAREER_STATUS_MAP: Record<string, string> = {
-  FRESH_GRADUATE: "Fresh Graduate",
-  EARLY_CAREER: "Early Career",
-  CAREER_SWITCHER: "Career Switcher",
-};
 
 const EMPLOYMENT_TYPE_MAP: Record<string, string> = {
   FULL_TIME: "Full Time",
@@ -54,25 +59,17 @@ const EMPLOYMENT_TYPE_OPTIONS = [
   "INTERNSHIP",
   "FREELANCE",
 ] as const;
-const MIME_TYPE_OPTIONS = ["image/jpeg", "image/png", "image/webp"] as const;
 
 const inputClass =
   "w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-[14px] text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50 disabled:text-gray-400";
 const labelClass = "text-[12px] font-bold uppercase tracking-wider text-gray-500";
 
-type SaveSection = "account" | "photo" | "skills" | "experience" | "education";
+type SaveSection = "account" | "skills" | "experience" | "education" | "cv";
 
 interface AccountForm {
   username: string;
   phoneNumber: string;
   displayName: string;
-}
-
-interface PhotoForm {
-  storageKey: string;
-  url: string;
-  mimeType: string;
-  sizeBytes: string;
 }
 
 interface SkillForm {
@@ -135,22 +132,37 @@ function dateInputValue(date: string | null) {
   return date ? date.slice(0, 10) : "";
 }
 
-function deriveStorageKey(url: string | null | undefined) {
-  if (!url) return "";
-  try {
-    const pathname = new URL(url).pathname.replace(/^\/+/, "");
-    const profilePhotoIndex = pathname.indexOf("profile-photos/");
-    return profilePhotoIndex >= 0 ? pathname.slice(profilePhotoIndex) : pathname;
-  } catch {
-    return "";
-  }
-}
-
 function numberOrNull(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return null;
   const parsed = Number(trimmed);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatFileSize(sizeBytes: number | null | undefined) {
+  if (!sizeBytes || sizeBytes <= 0) return "-";
+  const units = ["B", "KB", "MB", "GB"];
+  let size = sizeBytes;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${size.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
+function formatDateTime(value: string | null | undefined) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function emptySkill(): SkillForm {
@@ -190,18 +202,6 @@ function syncAccountForm(profile: ProfileData): AccountForm {
     username: profile.username ?? "",
     phoneNumber: profile.phoneNumber ?? "",
     displayName: profile.displayName ?? "",
-  };
-}
-
-function syncPhotoForm(profile: ProfileData): PhotoForm {
-  return {
-    storageKey:
-      profile.profilePhoto?.storageKey ?? deriveStorageKey(profile.profilePhoto?.url),
-    url: profile.profilePhoto?.url ?? "",
-    mimeType: profile.profilePhoto?.mimeType ?? "image/jpeg",
-    sizeBytes: profile.profilePhoto?.sizeBytes
-      ? String(profile.profilePhoto.sizeBytes)
-      : "",
   };
 }
 
@@ -281,7 +281,11 @@ function SectionHeader({
           disabled={saving}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#0066FF] px-4 py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
           Save
         </button>
       </div>
@@ -306,16 +310,11 @@ function Field({
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [activeCVFile, setActiveCVFile] = useState<ActiveCVFile | null>(null);
   const [accountForm, setAccountForm] = useState<AccountForm>({
     username: "",
     phoneNumber: "",
     displayName: "",
-  });
-  const [photoForm, setPhotoForm] = useState<PhotoForm>({
-    storageKey: "",
-    url: "",
-    mimeType: "image/jpeg",
-    sizeBytes: "",
   });
   const [skillForms, setSkillForms] = useState<SkillForm[]>([emptySkill()]);
   const [experienceForms, setExperienceForms] = useState<ExperienceForm[]>([
@@ -325,15 +324,16 @@ export default function ProfilePage() {
     emptyEducation(),
   ]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCVLoading, setIsCVLoading] = useState(true);
   const [savingSection, setSavingSection] = useState<SaveSection | null>(null);
   const [savedSection, setSavedSection] = useState<SaveSection | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const cvInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const applyProfile = (nextProfile: ProfileData) => {
     setProfile(nextProfile);
     setAccountForm(syncAccountForm(nextProfile));
-    setPhotoForm(syncPhotoForm(nextProfile));
     setSkillForms(syncSkillForms(nextProfile));
     setExperienceForms(syncExperienceForms(nextProfile));
     setEducationForms(syncEducationForms(nextProfile));
@@ -350,6 +350,17 @@ export default function ProfilePage() {
         }
       })
       .finally(() => setIsLoading(false));
+  }, [router]);
+
+  useEffect(() => {
+    fetchActiveCVFile()
+      .then((res) => setActiveCVFile(res.data?.cvFile ?? null))
+      .catch((err: unknown) => {
+        if (err instanceof APIError && err.status === 401) {
+          router.push("/login");
+        }
+      })
+      .finally(() => setIsCVLoading(false));
   }, [router]);
 
   const handleSaveError = (err: unknown) => {
@@ -381,30 +392,6 @@ export default function ProfilePage() {
         displayName: accountForm.displayName.trim(),
       });
       finishSaving("account", res.data);
-    } catch (err) {
-      handleSaveError(err);
-    } finally {
-      setSavingSection(null);
-    }
-  };
-
-  const savePhoto = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const sizeBytes = Number(photoForm.sizeBytes);
-    if (!photoForm.storageKey.trim() || !Number.isFinite(sizeBytes) || sizeBytes <= 0) {
-      setError("Storage key and a valid photo size are required.");
-      return;
-    }
-
-    startSaving("photo");
-    try {
-      const res = await updateProfilePhoto({
-        storageKey: photoForm.storageKey.trim(),
-        url: photoForm.url.trim() || null,
-        mimeType: photoForm.mimeType,
-        sizeBytes,
-      });
-      finishSaving("photo", res.data);
     } catch (err) {
       handleSaveError(err);
     } finally {
@@ -485,17 +472,38 @@ export default function ProfilePage() {
     }
   };
 
+  const uploadActiveCV = async (file: File) => {
+    if (!file) return;
+
+    startSaving("cv");
+    try {
+      const res = await uploadCVFile(file, true);
+      setActiveCVFile(res.data?.cvFile ?? null);
+      setSavedSection("cv");
+    } catch (err) {
+      if (err instanceof APIError && err.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      setError(err instanceof Error ? err.message : "Gagal mengunggah CV");
+    } finally {
+      setSavingSection(null);
+      if (cvInputRef.current) cvInputRef.current.value = "";
+    }
+  };
+
+  const handleCVFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    void uploadActiveCV(file);
+  };
+
   const avatarUrl =
     profile?.profilePhoto?.url ??
     `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
       profile?.username ?? "user",
     )}&backgroundColor=F0F5FF`;
-
-  const displayRole =
-    profile?.profile?.latestRole ??
-    CAREER_STATUS_MAP[profile?.profile?.careerStatus ?? ""] ??
-    profile?.profile?.careerStatus ??
-    "-";
 
   return (
     <ProfileShell
@@ -510,66 +518,194 @@ export default function ProfilePage() {
       )}
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[340px_1fr]">
-        <div className="rounded-xl border border-gray-100 bg-white p-8 text-center shadow-sm sticky top-20">
-          {isLoading ? (
-            <div className="flex flex-col items-center">
-              <Skeleton className="mb-5 h-24 w-24 rounded-2xl" />
-              <Skeleton className="mb-2 h-6 w-40" />
-              <Skeleton className="mb-8 h-4 w-32" />
-              <div className="w-full space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-              <Skeleton className="mt-8 h-10 w-full" />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center">
-              <div className="relative mb-5">
-                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-[#F0F5FF]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={avatarUrl}
-                    alt={profile?.displayName ?? "Profile photo"}
-                    className="h-full w-full object-cover"
-                  />
+        <div className="space-y-6 lg:sticky lg:top-20">
+          <div className="rounded-xl border border-gray-100 bg-white p-8 text-center shadow-sm">
+            {isLoading ? (
+              <div className="flex flex-col items-center">
+                <Skeleton className="mb-5 h-24 w-24 rounded-2xl" />
+                <Skeleton className="mb-2 h-6 w-40" />
+                <Skeleton className="mb-8 h-4 w-32" />
+                <div className="w-full space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
                 </div>
+                <Skeleton className="mt-8 h-10 w-full" />
               </div>
-
-              <h2 className="text-[22px] font-bold text-gray-900">
-                {profile?.username ?? "-"}
-              </h2>
-
-              <div className="mt-8 w-full space-y-4 text-left">
-                <div className="flex items-start gap-3 text-gray-600">
-                  <MailIcon className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
-                  <div>
-                    <p className={labelClass}>Email Address</p>
-                    <p className="mt-1 text-[14px] font-medium text-gray-900">
-                      {profile?.email ?? "-"}
-                      {profile?.emailVerified && (
-                        <span className="ml-2 inline-flex items-center rounded bg-green-50 px-1.5 py-0.5 text-[11px] font-semibold text-green-600">
-                          Verified
-                        </span>
-                      )}
-                    </p>
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="relative mb-5">
+                  <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-[#F0F5FF]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={avatarUrl}
+                      alt={profile?.displayName ?? "Profile photo"}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                 </div>
-                <div className="flex items-start gap-3 text-gray-600">
-                  <PhoneIcon className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
-                  <div>
-                    <p className={labelClass}>Phone Number</p>
-                    <p className="mt-1 text-[14px] font-medium text-gray-900">
-                      {profile?.phoneNumber ?? "-"}
-                    </p>
+
+                <h2 className="text-[22px] font-bold text-gray-900">
+                  {profile?.username ?? "-"}
+                </h2>
+
+                <div className="mt-8 w-full space-y-4 text-left">
+                  <div className="flex items-start gap-3 text-gray-600">
+                    <MailIcon className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
+                    <div>
+                      <p className={labelClass}>Email Address</p>
+                      <p className="mt-1 text-[14px] font-medium text-gray-900">
+                        {profile?.email ?? "-"}
+                        {profile?.emailVerified && (
+                          <span className="ml-2 inline-flex items-center rounded bg-green-50 px-1.5 py-0.5 text-[11px] font-semibold text-green-600">
+                            Verified
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 text-gray-600">
+                    <PhoneIcon className="mt-0.5 h-5 w-5 shrink-0 text-gray-400" />
+                    <div>
+                      <p className={labelClass}>Phone Number</p>
+                      <p className="mt-1 text-[14px] font-medium text-gray-900">
+                        {profile?.phoneNumber ?? "-"}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <button className="mt-8 w-full rounded-lg border border-gray-200 bg-white py-2.5 text-[14px] font-bold text-gray-700 transition-colors hover:bg-gray-50">
-                Change Password
-              </button>
+                <button className="mt-8 w-full rounded-lg border border-gray-200 bg-white py-2.5 text-[14px] font-bold text-gray-700 transition-colors hover:bg-gray-50">
+                  Change Password
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="mb-5 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-[18px] font-bold text-gray-900">Your CV</h2>
+                {savedSection === "cv" && (
+                  <p className="mt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold text-green-700">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Updated
+                  </p>
+                )}
+              </div>
             </div>
-          )}
+
+            {isCVLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Link
+                  href="/ai-cv-analyzer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[14px] font-bold text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <FileText className="h-4 w-4" />
+                  Open Analyzer
+                </Link>
+              </div>
+            ) : activeCVFile ? (
+              <div className="space-y-5">
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600 shadow-sm">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-[14px] font-bold text-gray-900">
+                        {activeCVFile.originalFileName}
+                      </p>
+                      <p className="mt-1 text-[12px] text-gray-500">
+                        {activeCVFile.mimeType} - {formatFileSize(activeCVFile.sizeBytes)}
+                      </p>
+                    </div>
+                  </div>
+                  <dl className="mt-4 grid grid-cols-2 gap-3 text-left">
+                    <div>
+                      <dt className={labelClass}>Uploaded</dt>
+                      <dd className="mt-1 text-[13px] font-semibold text-gray-800">
+                        {formatDateTime(activeCVFile.uploadedAt)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={labelClass}>Expires</dt>
+                      <dd className="mt-1 text-[13px] font-semibold text-gray-800">
+                        {formatDateTime(activeCVFile.expiresAt)}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div className="grid gap-2">
+                  <button
+                    type="button"
+                    onClick={() => cvInputRef.current?.click()}
+                    disabled={savingSection === "cv"}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[14px] font-bold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {savingSection === "cv" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    Replace CV
+                  </button>
+                  <Link
+                    href="/ai-cv-analyzer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0066FF] px-4 py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-blue-700"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Analyze CV
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-5 text-center">
+                  <FileText className="mx-auto h-8 w-8 text-gray-300" />
+                  <p className="mt-3 text-[14px] font-bold text-gray-800">
+                    No active CV yet
+                  </p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
+                    Upload a CV to keep it ready for analysis and applications.
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <button
+                    type="button"
+                    onClick={() => cvInputRef.current?.click()}
+                    disabled={savingSection === "cv"}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0066FF] px-4 py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {savingSection === "cv" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    Upload CV
+                  </button>
+                  <Link
+                    href="/ai-cv-analyzer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[14px] font-bold text-gray-700 transition-colors hover:bg-gray-50"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Open Analyzer
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            <input
+              ref={cvInputRef}
+              type="file"
+              className="hidden"
+              accept=".pdf"
+              onChange={handleCVFileChange}
+            />
+          </div>
         </div>
 
         <div className="space-y-6">

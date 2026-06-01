@@ -73,11 +73,6 @@ export default function SavedJobsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-[18px] font-bold text-gray-900">Saved Jobs</h2>
-            {bookmarkPagination && !isBookmarksLoading && (
-              <p className="mt-1 text-[13px] text-gray-500">
-                {bookmarkPagination.total.toLocaleString("id-ID")} lowongan tersimpan
-              </p>
-            )}
           </div>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">

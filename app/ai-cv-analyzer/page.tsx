@@ -12,6 +12,7 @@ import {
   CV_ANALYZER_RESULT_STORAGE_KEY,
   analyzeCV,
   fetchActiveCVFile,
+  type ActiveCVFile,
 } from "@/lib/api";
 
 /* ─── Icon Components ─── */
@@ -168,6 +169,14 @@ function LoadingOverlay({ currentStep }: { currentStep: number }) {
 /* ─── Data ─── */
 const suggestedRoles = ["Software Engineer", "Product Manager", "Data Analyst", "UI/UX Designer"];
 
+function formatCVFileSize(sizeBytes: number) {
+  if (sizeBytes < 1024 * 1024) {
+    return `${(sizeBytes / 1024).toFixed(0)} KB`;
+  }
+
+  return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 
 const testimonials = [
   {
@@ -290,6 +299,8 @@ export default function AICVAnalyzer() {
   const router = useRouter();
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
   const [uploadedFile, setUploadedFile] = useState<{ file: File; name: string; size: string } | null>(null);
+  const [activeCVFile, setActiveCVFile] = useState<ActiveCVFile | null>(null);
+  const [selectedActiveCVFileId, setSelectedActiveCVFileId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [targetRoles, setTargetRoles] = useState<string[]>([]);
   const [roleSearch, setRoleSearch] = useState("");
@@ -309,29 +320,36 @@ export default function AICVAnalyzer() {
     return () => clearTimeout(timeout);
   }, [isAnalyzing, currentStep]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchActiveCVFile()
+      .then((response) => {
+        if (!isMounted) return;
+        setActiveCVFile(response.data?.cvFile ?? null);
+      })
+      .catch((error: unknown) => {
+        if (error instanceof APIError && error.status === 401) return;
+        if (isMounted) setActiveCVFile(null);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleAnalyze = useCallback(async () => {
-    if (!uploadedFile || targetRoles.length === 0 || isAnalyzing) return;
+    if ((!uploadedFile && !selectedActiveCVFileId) || targetRoles.length === 0 || isAnalyzing) return;
 
     setAnalysisError(null);
     setCurrentStep(0);
     setIsAnalyzing(true);
 
     try {
-      let cvFileId: string | null = null;
-
-      try {
-        const activeCVResponse = await fetchActiveCVFile();
-        cvFileId = activeCVResponse.data?.cvFile?.id ?? null;
-      } catch (error) {
-        if (error instanceof APIError && error.status === 401) {
-          throw error;
-        }
-      }
-
       const response = await analyzeCV({
         jobRoles: targetRoles,
-        cvFile: uploadedFile.file,
-        cvFileId,
+        cvFile: uploadedFile?.file,
+        cvFileId: selectedActiveCVFileId,
         language: "id",
       });
 
@@ -361,9 +379,11 @@ export default function AICVAnalyzer() {
           : "Gagal menganalisis CV. Silakan coba lagi.",
       );
     }
-  }, [isAnalyzing, router, targetRoles, uploadedFile]);
+  }, [isAnalyzing, router, selectedActiveCVFileId, targetRoles, uploadedFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (selectedActiveCVFileId) return;
+
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile({
@@ -371,6 +391,7 @@ export default function AICVAnalyzer() {
         name: file.name,
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
       });
+      setSelectedActiveCVFileId(null);
       setAnalysisError(null);
     }
   };
@@ -378,6 +399,8 @@ export default function AICVAnalyzer() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+    if (selectedActiveCVFileId) return;
+
     const file = e.dataTransfer.files?.[0];
     if (file) {
       setUploadedFile({
@@ -385,12 +408,14 @@ export default function AICVAnalyzer() {
         name: file.name,
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
       });
+      setSelectedActiveCVFileId(null);
       setAnalysisError(null);
     }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    if (selectedActiveCVFileId) return;
     setIsDragging(true);
   };
 
@@ -399,6 +424,21 @@ export default function AICVAnalyzer() {
   };
 
   const removeFile = () => {
+    setUploadedFile(null);
+    setAnalysisError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const selectActiveCVFile = () => {
+    if (!activeCVFile) return;
+
+    if (selectedActiveCVFileId === activeCVFile.id) {
+      setSelectedActiveCVFileId(null);
+      setAnalysisError(null);
+      return;
+    }
+
+    setSelectedActiveCVFileId(activeCVFile.id);
     setUploadedFile(null);
     setAnalysisError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -421,6 +461,9 @@ export default function AICVAnalyzer() {
       setRoleSearch("");
     }
   };
+
+  const hasSelectedCV = Boolean(uploadedFile || selectedActiveCVFileId);
+  const isActiveCVSelected = Boolean(activeCVFile && selectedActiveCVFileId === activeCVFile.id);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -469,21 +512,30 @@ export default function AICVAnalyzer() {
 
           {/* Dropzone */}
           <div
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => {
+              if (!selectedActiveCVFileId) fileInputRef.current?.click();
+            }}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            className={`border-2 border-dashed rounded-xl px-8 py-12 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-200 mb-4 ${
-              isDragging
+            aria-disabled={Boolean(selectedActiveCVFileId)}
+            className={`border-2 border-dashed rounded-xl px-8 py-12 flex flex-col items-center justify-center gap-2 transition-all duration-200 mb-4 ${
+              selectedActiveCVFileId
+                ? "border-gray-200 bg-gray-100/70 cursor-not-allowed opacity-60"
+                : isDragging
                 ? "border-blue-500 bg-blue-50/60"
-                : "border-gray-200 bg-gray-50/50 hover:border-blue-400 hover:bg-blue-50/30"
+                : "border-gray-200 bg-gray-50/50 hover:border-blue-400 hover:bg-blue-50/30 cursor-pointer"
             }`}
           >
             <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
               <CloudUploadIcon />
             </div>
-            <p className="text-[14px] font-semibold text-gray-700 m-0">Click to upload or drag &amp; drop</p>
-            <p className="text-[12px] text-gray-400 m-0">PDF, DOCX, or TXT (Max 5MB)</p>
+            <p className="text-[14px] font-semibold text-gray-700 m-0">
+              {selectedActiveCVFileId ? "Active CV selected" : "Click to upload or drag & drop"}
+            </p>
+            <p className="text-[12px] text-gray-400 m-0">
+              {selectedActiveCVFileId ? "Unselect active CV to upload a different file" : "PDF, DOCX, or TXT (Max 5MB)"}
+            </p>
           </div>
 
           <input
@@ -491,8 +543,42 @@ export default function AICVAnalyzer() {
             type="file"
             accept=".pdf,.doc,.docx,.txt"
             className="hidden"
+            disabled={Boolean(selectedActiveCVFileId)}
             onChange={handleFileChange}
           />
+
+          {activeCVFile && (
+            <button
+              type="button"
+              onClick={selectActiveCVFile}
+              className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 mb-4 text-left cursor-pointer transition-all duration-200 ${
+                isActiveCVSelected
+                  ? "border-2 border-blue-500 bg-blue-50"
+                  : "border border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/40"
+              }`}
+            >
+              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <FileIcon />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-gray-800 m-0 truncate">
+                  Use active CV: {activeCVFile.originalFileName}
+                </p>
+                <p className="text-[11px] text-gray-400 m-0">
+                  {activeCVFile.mimeType} • {formatCVFileSize(activeCVFile.sizeBytes)}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold ${
+                  isActiveCVSelected
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                {isActiveCVSelected ? "Unselect" : "Use this"}
+              </span>
+            </button>
+          )}
 
           {/* Uploaded File */}
           {uploadedFile && (
@@ -585,9 +671,9 @@ export default function AICVAnalyzer() {
           <div className="flex justify-center mt-6">
             <button
               onClick={handleAnalyze}
-              disabled={!uploadedFile || targetRoles.length === 0 || isAnalyzing}
+              disabled={!hasSelectedCV || targetRoles.length === 0 || isAnalyzing}
               className={`flex items-center gap-2 px-8 py-3 rounded-full text-white text-[14px] font-semibold border-none cursor-pointer transition-all duration-200 shadow-[0_4px_16px_rgba(37,99,235,0.25)] ${
-                !uploadedFile || targetRoles.length === 0
+                !hasSelectedCV || targetRoles.length === 0
                   ? "bg-gray-300 cursor-not-allowed shadow-none"
                   : "bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
               }`}
