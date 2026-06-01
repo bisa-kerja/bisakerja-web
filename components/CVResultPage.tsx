@@ -2,7 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import JobCard, { type JobCardProps } from "./JobCard";
+import {
+  CV_ANALYZER_RESULT_STORAGE_KEY,
+  type CVAnalyzerResponse,
+  type CVJobRecommendation,
+} from "@/lib/api";
+
+interface DisplaySectionReview {
+  title: string;
+  analysis: string;
+  actionPoints: string[];
+  importance: string;
+}
 
 /* ─── Icon Components ─── */
 function ChevronIcon({ open }: { open: boolean }) {
@@ -46,10 +57,10 @@ function SpinnerIcon() {
   );
 }
 
-/* ─── Mock Data ─── */
+/* ─── Fallback Data ─── */
 const overallImpression = `Overall, your CV leaves an exceptionally strong impression. It is well-structured, highly engaging, and immediately captures attention with its clear presentation of technical skills and quantifiable achievements. The depth of your work experience, coupled with impressive competition wins and a clear professional summary, makes this a standout resume. It effectively communicates your expertise as a Front End Developer and your passion for the field.`;
 
-const sections = [
+const sections: DisplaySectionReview[] = [
   {
     title: "Contact Information",
 
@@ -89,96 +100,19 @@ const sections = [
   },
 ];
 
-/* ─── Mock Matched Jobs ─── */
-const matchedJobs: JobCardProps[] = [
-  {
-    id: "match-1",
-    title: "Frontend Developer",
-    company: { name: "Tokopedia", logoUrl: null },
-    workType: "HYBRID",
-    employmentType: "FULL_TIME",
-    experienceLevel: "MID_LEVEL",
-    location: { display: "Jakarta, Indonesia" },
-    salary: { display: "Rp 8.000.000 – 15.000.000" },
-    postedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    sourcePlatform: { name: "LinkedIn" },
-  },
-  {
-    id: "match-2",
-    title: "React Developer",
-    company: { name: "Gojek", logoUrl: null },
-    workType: "ONSITE",
-    employmentType: "FULL_TIME",
-    experienceLevel: "MID_LEVEL",
-    location: { display: "Jakarta, Indonesia" },
-    salary: { display: "Rp 10.000.000 – 18.000.000" },
-    postedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    sourcePlatform: { name: "Glints" },
-  },
-  {
-    id: "match-3",
-    title: "UI Engineer",
-    company: { name: "Bukalapak", logoUrl: null },
-    workType: "REMOTE",
-    employmentType: "FULL_TIME",
-    experienceLevel: "MID_LEVEL",
-    location: { display: "Remote" },
-    salary: { display: "Rp 9.000.000 – 16.000.000" },
-    postedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    sourcePlatform: { name: "Kalibrr" },
-  },
-  {
-    id: "match-4",
-    title: "Senior Frontend Engineer",
-    company: { name: "Traveloka", logoUrl: null },
-    workType: "HYBRID",
-    employmentType: "FULL_TIME",
-    experienceLevel: "SENIOR_LEVEL",
-    location: { display: "Jakarta, Indonesia" },
-    salary: { display: "Rp 18.000.000 – 28.000.000" },
-    postedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    sourcePlatform: { name: "LinkedIn" },
-  },
-];
-
 const actionableSteps = [
-  {
-    title: "Strengthen the Professional Summary",
-    description:
-      "Your current summary is generic. Tailor it to explicitly mention B2B SaaS experience as required by the Target Role.",
-  },
-  {
-    title: "Integrate missing technical skills",
-    description:
-      "Add 'Design Systems' and 'Figma Auto-layout' to your skills section and mention them in your recent work experience context.",
-  },
-  {
-    title: "Format consistency in work history",
-    description:
-      "Ensure all dates use the same format (e.g., MM/YYYY - MM/YYYY) to improve ATS parsability score.",
-  },
+  "Strengthen the professional summary with target-role keywords and measurable impact.",
+  "Integrate missing technical skills into a clearer skills section.",
+  "Keep dates and work-history formatting consistent for better ATS parsing.",
 ];
 
 const cvTemplates = [
-  { id: "template-1", name: "Template 1", path: "/templates/template-1.html", accent: "#1F2937" },
-  { id: "template-2", name: "Template 2", path: "/templates/template-2.html", accent: "#2563EB" },
-  { id: "template-3", name: "Template 3", path: "/templates/template-3.html", accent: "#0D9488" },
-  { id: "template-4", name: "Template 4", path: "/templates/template-4.html", accent: "#2DD4BF" },
-  { id: "template-5", name: "Template 5", path: "/templates/template-5.html", accent: "#1E3A5F" },
-  { id: "template-6", name: "Template 6", path: "/templates/template-6.html", accent: "#2563EB" },
-  { id: "template-7", name: "Template 7", path: "/templates/template-7.html", accent: "#0F766E" },
-  { id: "template-8", name: "Template 8", path: "/templates/template-8.html", accent: "#7C3AED" },
-  { id: "template-9", name: "Template 9", path: "/templates/template-9.html", accent: "#EA580C" },
-  { id: "template-10", name: "Template 10", path: "/templates/template-10.html", accent: "#4B5563" },
-  { id: "template-11", name: "Template 11", path: "/templates/template-11.html", accent: "#2563EB" },
-  { id: "template-12", name: "Template 12", path: "/templates/template-12.html", accent: "#0D9488" },
-  { id: "template-13", name: "Template 13", path: "/templates/template-13.html", accent: "#7C3AED" },
-  { id: "template-14", name: "Template 14", path: "/templates/template-14.html", accent: "#DC2626" },
-  { id: "template-15", name: "Template 15", path: "/templates/template-15.html", accent: "#0891B2" },
-  { id: "template-16", name: "Template 16", path: "/templates/template-16.html", accent: "#334155" },
-  { id: "template-17", name: "Template 17", path: "/templates/template-17.html", accent: "#16A34A" },
-  { id: "template-18", name: "Template 18", path: "/templates/template-18.html", accent: "#9333EA" },
-  { id: "template-19", name: "Template 19", path: "/templates/template-19.html", accent: "#C2410C" },
+  { id: "template-1", name: "Template 1", path: "/templates/template-2.html", accent: "#2563EB" },
+  { id: "template-2", name: "Template 2", path: "/templates/template-3.html", accent: "#0D9488" },
+  { id: "template-3", name: "Template 3", path: "/templates/template-8.html", accent: "#7C3AED" },
+  { id: "template-4", name: "Template 4", path: "/templates/template-10.html", accent: "#4B5563" },
+  { id: "template-5", name: "Template 5", path: "/templates/template-15.html", accent: "#0891B2" },
+  { id: "template-6", name: "Template 6", path: "/templates/template-18.html", accent: "#9333EA" },
 ];
 
 const generationSteps = [
@@ -281,10 +215,10 @@ function GaugeChart({
       </div>
       {/* Fit label */}
       <p
-        className="text-[14px] font-bold m-0 mt-2 flex items-center gap-1"
+        className="text-[14px] font-bold m-0 mt-2"
         style={{ color: color }}
       >
-        your cv is pretty goddd wdipisicing elit. Tempora nam vitae maxime errom, molestiae placeat deleniti in modi quibusdam itaque iure natus?
+        {score >= 80 ? "Strong fit" : score >= 60 ? "Good fit" : "Needs work"}
       </p>
     </div>
   );
@@ -518,7 +452,7 @@ function SectionCard({
   section,
   defaultOpen = false,
 }: {
-  section: (typeof sections)[0];
+  section: DisplaySectionReview;
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -588,15 +522,83 @@ function SectionCard({
   );
 }
 
+function JobRecommendationCard({ job }: { job: CVJobRecommendation }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h4 className="m-0 text-[15px] font-extrabold text-slate-800">
+            {job.title}
+          </h4>
+          <p className="m-0 mt-1 text-[13px] font-semibold text-slate-500">
+            {job.companyName}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[12px] font-extrabold text-blue-700">
+          {job.matchScore}%
+        </span>
+      </div>
+
+      <p className="m-0 mt-4 text-[13px] leading-relaxed text-slate-500">
+        {job.reason}
+      </p>
+
+      <div className="mt-4 rounded-xl bg-slate-50 px-3.5 py-3">
+        <p className="m-0 text-[11px] font-extrabold uppercase tracking-[0.7px] text-slate-400">
+          Next step
+        </p>
+        <p className="m-0 mt-1 text-[13px] leading-relaxed text-slate-600">
+          {job.nextStep}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function readStoredCVAnalysis(): CVAnalyzerResponse | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = sessionStorage.getItem(CV_ANALYZER_RESULT_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as CVAnalyzerResponse;
+  } catch {
+    return null;
+  }
+}
+
 /* ─── Main Result Page ─── */
 export default function CVResultPage() {
-  const jobFitScore = 76;
-  const atsScore = 94;
+  const [analysisResponse, setAnalysisResponse] =
+    useState<CVAnalyzerResponse | null>(null);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [isGeneratingCV, setIsGeneratingCV] = useState(false);
   const [generationStep, setGenerationStep] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState<(typeof cvTemplates)[0] | null>(null);
   const [generatedTemplateName, setGeneratedTemplateName] = useState<string | null>(null);
+
+  const analysis = analysisResponse?.data.analysisResult;
+  const jobFitScore = analysis?.jobFitAlignment.score ?? 76;
+  const atsScore = analysis?.atsFriendliness.score ?? 94;
+  const displayedOverallImpression =
+    analysis?.overallImpression ?? overallImpression;
+  const displayedSections =
+    analysis?.sectionReviews.map((section) => ({
+      title: section.sectionName,
+      analysis: section.analysis,
+      actionPoints: section.actionPoints,
+      importance: section.whyItsImportantForYou,
+    })) ?? sections;
+  const displayedActionables = analysis?.topActionables ?? actionableSteps;
+  const jobRecommendations = analysis?.jobRecommendations ?? [];
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setAnalysisResponse(readStoredCVAnalysis());
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     if (!isGeneratingCV) return;
@@ -659,7 +661,9 @@ export default function CVResultPage() {
             Hasil Review CV Kamu
           </h1>
           <p className="text-[13px] md:text-[15px] text-white/80 m-0 drop-shadow-md">
-            Perbaiki CV kamu agar lebih mudah dapat panggilan HR. Semangat!
+            {analysisResponse
+              ? `Target role: ${analysisResponse.data.jobRoles.join(", ")}`
+              : "Perbaiki CV kamu agar lebih mudah dapat panggilan HR. Semangat!"}
           </p>
         </div>
       </div>
@@ -682,6 +686,11 @@ export default function CVResultPage() {
               Job Fit Score
             </p>
             <GaugeChart score={jobFitScore} size={150} strokeWidth={14} />
+            {analysis?.jobFitAlignment.summary && (
+              <p className="m-0 mt-4 text-[12px] leading-relaxed text-slate-500">
+                {analysis.jobFitAlignment.summary}
+              </p>
+            )}
           </div>
 
           {/* ATS Friendliness */}
@@ -694,6 +703,11 @@ export default function CVResultPage() {
               ATS Friendliness
             </p>
             <DonutChart score={atsScore} size={150} strokeWidth={12} label="ATS Score" />
+            {analysis?.atsFriendliness.summary && (
+              <p className="m-0 mt-4 text-[12px] leading-relaxed text-slate-500">
+                {analysis.atsFriendliness.summary}
+              </p>
+            )}
           </div>
 
           {/* Keyword Optimization */}
@@ -745,14 +759,14 @@ export default function CVResultPage() {
                 <p
                   className="text-[13px] text-slate-500 leading-relaxed m-0"
                 >
-                  {overallImpression}
+                  {displayedOverallImpression}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Expandable Sections */}
-          {sections.map((section, i) => (
+          {displayedSections.map((section, i) => (
             <SectionCard
               key={section.title}
               section={section}
@@ -788,7 +802,7 @@ export default function CVResultPage() {
               <span
                 className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200 whitespace-nowrap"
               >
-                {matchedJobs.length} lowongan
+                {jobRecommendations.length} lowongan
               </span>
             </div>
 
@@ -798,11 +812,19 @@ export default function CVResultPage() {
             />
 
             {/* Job Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {matchedJobs.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
-            </div>
+            {jobRecommendations.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {jobRecommendations.map((job) => (
+                  <JobRecommendationCard key={job.jobId} job={job} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-gray-200 bg-slate-50 px-5 py-6 text-center">
+                <p className="m-0 text-[13px] font-semibold text-slate-500">
+                  Rekomendasi lowongan akan muncul setelah analisis CV selesai.
+                </p>
+              </div>
+            )}
 
             {/* View All Button */}
             <div
@@ -845,7 +867,7 @@ export default function CVResultPage() {
             <div
               className="flex flex-col gap-5"
             >
-              {actionableSteps.map((step, i) => (
+              {displayedActionables.map((step, i) => (
                 <div
                   key={i}
                   className="flex gap-4 items-start"
@@ -859,12 +881,12 @@ export default function CVResultPage() {
                     <h4
                       className="text-[14px] font-bold text-slate-800 m-0 mb-1"
                     >
-                      {step.title}
+                      Rekomendasi {i + 1}
                     </h4>
                     <p
                       className="text-[13px] text-slate-500 leading-[1.65] m-0"
                     >
-                      {step.description}
+                      {step}
                     </p>
                   </div>
                 </div>

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { APIError, uploadCVFile } from "@/lib/api";
 
 /* ─── Cloud Upload Icon ─── */
 function CloudUploadIcon() {
@@ -64,9 +65,53 @@ function CloseIcon() {
   );
 }
 
+function UploadErrorModal({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upload-error-title"
+        className="w-full max-w-[420px] rounded-xl bg-white shadow-[0_24px_80px_rgba(15,23,42,0.24)]"
+      >
+        <div className="flex items-start gap-4 p-6">
+          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
+            <CloseIcon />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 id="upload-error-title" className="m-0 text-base font-semibold text-gray-950">
+              Upload failed
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              {message}
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end border-t border-gray-100 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg bg-[#2B7FE0] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#2470c9] cursor-pointer border-none"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function UploadCVStep() {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [errorModalMessage, setErrorModalMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -80,13 +125,14 @@ export default function UploadCVStep() {
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     if (!allowedTypes.includes(selectedFile.type)) {
-      alert("Please upload a PDF, DOCX, or RTF file.");
+      setErrorModalMessage("Please upload a PDF, DOCX, or RTF file.");
       return;
     }
     if (selectedFile.size > maxSize) {
-      alert("File size must be under 5MB.");
+      setErrorModalMessage("File size must be under 5MB.");
       return;
     }
+    setErrorModalMessage(null);
     setFile(selectedFile);
   };
 
@@ -120,11 +166,56 @@ export default function UploadCVStep() {
 
   const removeFile = () => {
     setFile(null);
+    setErrorModalMessage(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const HandleNextStep = () => {
+  const handleNextStep = () => {
     router.push("/register/onboarding/job-reference");
+  };
+
+  const getUploadErrorMessage = (err: unknown) => {
+    if (err instanceof APIError) {
+      if (Array.isArray(err.details) && err.details.length > 0) {
+        const firstError = err.details[0] as { message?: string };
+        return firstError.message || err.message || "Failed to upload CV.";
+      }
+
+      if (err.details && typeof err.details === "object") {
+        const fieldErrors = Object.values(err.details).flat();
+        if (fieldErrors.length > 0) {
+          const firstError = fieldErrors[0];
+          return typeof firstError === "string"
+            ? firstError
+            : (firstError as { message?: string }).message || err.message || "Failed to upload CV.";
+        }
+      }
+
+      return err.message || "Failed to upload CV.";
+    }
+
+    return "Failed to upload CV. Please try again.";
+  };
+
+  const handleUploadAndContinue = async () => {
+    if (!file || isUploading) return;
+
+    setIsUploading(true);
+    setErrorModalMessage(null);
+
+    try {
+      const res = await uploadCVFile(file, true);
+      if (res.success) {
+        handleNextStep();
+        return;
+      }
+
+      setErrorModalMessage(res.message || "Failed to upload CV.");
+    } catch (err) {
+      setErrorModalMessage(getUploadErrorMessage(err));
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -149,7 +240,7 @@ export default function UploadCVStep() {
         {/* Segmented Progress Bar */}
         <div className="w-full flex items-center gap-1.5 mb-10">
           <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
-          <div className="flex-1 h-[4px] bg-[#2B7FE0] rounded-full" />
+          <div className="flex-1 h-[4px] bg-gray-200 rounded-full" />
           <div className="flex-1 h-[4px] bg-gray-200 rounded-full" />
         </div>
 
@@ -184,7 +275,7 @@ export default function UploadCVStep() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,.docx,.rtf"
+                accept=".pdf"
                 className="hidden"
                 onChange={handleInputChange}
               />
@@ -246,22 +337,30 @@ export default function UploadCVStep() {
           <div className="border-t border-gray-100 px-8 py-5 sm:px-12 flex items-center justify-between">
             <button
               type="button"
-              onClick={() => HandleNextStep()}
-              className="text-sm font-semibold text-[#2B7FE0] hover:text-[#1d6bc4] transition-colors bg-transparent border-none cursor-pointer p-0"
+              onClick={handleNextStep}
+              disabled={isUploading}
+              className="text-sm font-semibold text-[#2B7FE0] hover:text-[#1d6bc4] transition-colors bg-transparent border-none cursor-pointer p-0 disabled:text-gray-300 disabled:cursor-not-allowed"
             >
               Skip for now
             </button>
             <button
               type="button"
-              className="px-8 py-2.5 rounded-lg bg-[#2B7FE0] text-white text-sm font-semibold hover:bg-[#2470c9] active:scale-[0.98] transition-all duration-200 border-none cursor-pointer flex items-center gap-1.5 group"
-              onClick={() => HandleNextStep()}
+              className="px-8 py-2.5 rounded-lg bg-[#2B7FE0] text-white text-sm font-semibold hover:bg-[#2470c9] active:scale-[0.98] transition-all duration-200 border-none cursor-pointer flex items-center gap-1.5 group disabled:bg-gray-300 disabled:cursor-not-allowed disabled:active:scale-100"
+              onClick={handleUploadAndContinue}
+              disabled={!file || isUploading}
             >
-              Continue
+              {isUploading ? "Uploading..." : "Continue"}
             </button>
           </div>
         </div>
 
       </div>
+      {errorModalMessage && (
+        <UploadErrorModal
+          message={errorModalMessage}
+          onClose={() => setErrorModalMessage(null)}
+        />
+      )}
     </div>
   );
 }

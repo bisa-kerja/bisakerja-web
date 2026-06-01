@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -16,12 +16,9 @@ import { ProfileShell, Skeleton } from "../_components/ProfileShell";
 
 const APPLICATION_STATUSES: ApplicationStatus[] = [
   "APPLIED",
-  "SCREENING",
   "INTERVIEW",
-  "OFFER",
   "ACCEPTED",
   "REJECTED",
-  "WITHDRAWN",
 ];
 
 const APPLICATION_STATUS_LABELS: Record<string, string> = {
@@ -33,13 +30,18 @@ const APPLICATION_STATUS_LABELS: Record<string, string> = {
 
 const APPLICATION_STATUS_STYLES: Record<string, string> = {
   APPLIED: "bg-[#E8F0FE] text-[#0066FF]",
-  SCREENING: "bg-purple-50 text-purple-700",
   INTERVIEW: "bg-amber-50 text-amber-700",
-  OFFER: "bg-cyan-50 text-cyan-700",
   ACCEPTED: "bg-[#DCFCE7] text-[#16A34A]",
   REJECTED: "bg-[#FEE2E2] text-[#DC2626]",
-  WITHDRAWN: "bg-[#F3F4F6] text-gray-600",
 };
+
+function ChevronDownIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
 
 function formatApplicationDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -71,7 +73,23 @@ export default function ApplicationTrackerPage() {
   const [updatingApplicationId, setUpdatingApplicationId] = useState<
     string | null
   >(null);
+  const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(null);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        statusDropdownRef.current &&
+        !statusDropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpenStatusDropdown(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const loadApplications = useCallback(async () => {
     await Promise.resolve();
@@ -118,6 +136,8 @@ export default function ApplicationTrackerPage() {
     status: ApplicationStatus,
   ) => {
     if (updatingApplicationId) return;
+
+    setOpenStatusDropdown(null);
 
     const previousApplications = applications;
     setUpdatingApplicationId(application.id);
@@ -166,11 +186,6 @@ export default function ApplicationTrackerPage() {
             <h2 className="text-[18px] font-bold text-gray-900">
               Application Tracker
             </h2>
-            {applicationPagination && !isApplicationsLoading && (
-              <p className="mt-1 text-[13px] text-gray-500">
-                {applicationPagination.total.toLocaleString("id-ID")} lamaran terlacak
-              </p>
-            )}
           </div>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -195,7 +210,7 @@ export default function ApplicationTrackerPage() {
           </div>
         )}
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-visible">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
@@ -243,6 +258,7 @@ export default function ApplicationTrackerPage() {
                     APPLICATION_STATUS_STYLES[application.status] ??
                     "bg-[#F3F4F6] text-gray-600";
                   const isUpdating = updatingApplicationId === application.id;
+                  const isDropdownOpen = openStatusDropdown === application.id;
 
                   return (
                     <tr key={application.id}>
@@ -282,24 +298,48 @@ export default function ApplicationTrackerPage() {
                         {application.job.location.display}
                       </td>
                       <td className="py-4 text-right">
-                        <select
-                          value={application.status}
-                          disabled={isUpdating}
-                          onChange={(event) =>
-                            handleApplicationStatusChange(
-                              application,
-                              event.target.value as ApplicationStatus,
-                            )
-                          }
-                          className={`inline-flex min-w-[132px] appearance-none rounded-full border-none px-3 py-1 text-[12px] font-bold outline-none cursor-pointer disabled:cursor-wait disabled:opacity-70 ${statusStyle}`}
-                          aria-label={`Status lamaran ${application.job.title}`}
+                        <div
+                          className="relative inline-block"
+                          ref={isDropdownOpen ? statusDropdownRef : undefined}
                         >
-                          {APPLICATION_STATUSES.map((status) => (
-                            <option key={status} value={status}>
-                              {APPLICATION_STATUS_LABELS[status]}
-                            </option>
-                          ))}
-                        </select>
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() =>
+                              setOpenStatusDropdown(
+                                isDropdownOpen ? null : application.id,
+                              )
+                            }
+                            className={`inline-flex items-center gap-1.5 min-w-[132px] justify-between rounded-full border-none px-3 py-1.5 text-[12px] font-bold outline-none cursor-pointer disabled:cursor-wait disabled:opacity-70 transition-colors ${statusStyle}`}
+                            aria-label={`Status lamaran ${application.job.title}`}
+                          >
+                            {APPLICATION_STATUS_LABELS[application.status] ?? application.status}
+                            <ChevronDownIcon size={12} />
+                          </button>
+                          {isDropdownOpen && (
+                            <div className="absolute top-full mt-1 right-0 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 min-w-[140px]">
+                              {APPLICATION_STATUSES.map((status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() =>
+                                    handleApplicationStatusChange(
+                                      application,
+                                      status,
+                                    )
+                                  }
+                                  className={`w-full px-3 py-2 text-left text-[13px] bg-transparent border-none cursor-pointer transition-colors ${
+                                    application.status === status
+                                      ? "text-blue-600 bg-blue-50 font-medium"
+                                      : "text-gray-700 hover:bg-gray-50"
+                                  }`}
+                                >
+                                  {APPLICATION_STATUS_LABELS[status]}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

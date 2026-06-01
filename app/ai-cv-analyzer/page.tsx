@@ -7,6 +7,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { TestimonialsColumn } from "@/components/ui/testimonials-columns-1";
 import { motion } from "motion/react";
+import {
+  APIError,
+  CV_ANALYZER_RESULT_STORAGE_KEY,
+  analyzeCV,
+  fetchActiveCVFile,
+} from "@/lib/api";
 
 /* ─── Icon Components ─── */
 
@@ -283,49 +289,89 @@ function FAQItem({ item, isOpen, onToggle }: { item: (typeof faqItems)[0]; isOpe
 export default function AICVAnalyzer() {
   const router = useRouter();
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
-  const [uploadedFile, setUploadedFile] = useState<{ name: string; size: string } | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<{ file: File; name: string; size: string } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [targetRoles, setTargetRoles] = useState<string[]>([]);
   const [roleSearch, setRoleSearch] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* ─── Analysis Loading Simulation ─── */
   useEffect(() => {
     if (!isAnalyzing) return;
 
-    // Each step takes ~2 seconds, then advance
-    if (currentStep >= loadingSteps.length) {
-      // All steps completed — show results
-      const timeout = setTimeout(() => {
-        setIsAnalyzing(false);
-        setCurrentStep(0);
-        router.push("/ai-cv-analyzer/result");
-      }, 800);
-      return () => clearTimeout(timeout);
-    }
-
     const timeout = setTimeout(() => {
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep((prev) => Math.min(prev + 1, loadingSteps.length - 1));
     }, 2000);
 
     return () => clearTimeout(timeout);
-  }, [isAnalyzing, currentStep, router]);
+  }, [isAnalyzing, currentStep]);
 
-  const handleAnalyze = useCallback(() => {
-    if (!uploadedFile) return;
+  const handleAnalyze = useCallback(async () => {
+    if (!uploadedFile || targetRoles.length === 0 || isAnalyzing) return;
+
+    setAnalysisError(null);
     setCurrentStep(0);
     setIsAnalyzing(true);
-  }, [uploadedFile]);
+
+    try {
+      let cvFileId: string | null = null;
+
+      try {
+        const activeCVResponse = await fetchActiveCVFile();
+        cvFileId = activeCVResponse.data?.cvFile?.id ?? null;
+      } catch (error) {
+        if (error instanceof APIError && error.status === 401) {
+          throw error;
+        }
+      }
+
+      const response = await analyzeCV({
+        jobRoles: targetRoles,
+        cvFile: uploadedFile.file,
+        cvFileId,
+        language: "id",
+      });
+
+      sessionStorage.setItem(
+        CV_ANALYZER_RESULT_STORAGE_KEY,
+        JSON.stringify(response),
+      );
+
+      setCurrentStep(loadingSteps.length);
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setCurrentStep(0);
+        router.push("/ai-cv-analyzer/result");
+      }, 700);
+    } catch (error) {
+      setIsAnalyzing(false);
+      setCurrentStep(0);
+
+      if (error instanceof APIError && error.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      setAnalysisError(
+        error instanceof Error
+          ? error.message
+          : "Gagal menganalisis CV. Silakan coba lagi.",
+      );
+    }
+  }, [isAnalyzing, router, targetRoles, uploadedFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile({
+        file,
         name: file.name,
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
       });
+      setAnalysisError(null);
     }
   };
 
@@ -335,9 +381,11 @@ export default function AICVAnalyzer() {
     const file = e.dataTransfer.files?.[0];
     if (file) {
       setUploadedFile({
+        file,
         name: file.name,
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
       });
+      setAnalysisError(null);
     }
   };
 
@@ -352,6 +400,7 @@ export default function AICVAnalyzer() {
 
   const removeFile = () => {
     setUploadedFile(null);
+    setAnalysisError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -527,6 +576,12 @@ export default function AICVAnalyzer() {
           </div>
 
           {/* Submit Button */}
+          {analysisError && (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-700">
+              {analysisError}
+            </div>
+          )}
+
           <div className="flex justify-center mt-6">
             <button
               onClick={handleAnalyze}

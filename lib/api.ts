@@ -280,6 +280,97 @@ export interface APIErrorResponse {
   };
 }
 
+// CV Analyzer
+export interface ActiveCVFile {
+  id: string;
+  originalFileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string;
+  expiresAt: string;
+  isActive: boolean;
+}
+
+export interface ActiveCVFileResponse {
+  success: boolean;
+  message: string;
+  data: {
+    cvFile: ActiveCVFile | null;
+  } | null;
+  meta: unknown;
+}
+
+export interface UploadCVFileResponse {
+  success: boolean;
+  message: string;
+  data: {
+    cvFile: ActiveCVFile;
+  } | null;
+  meta: unknown;
+}
+
+export interface CVSectionReview {
+  sectionName: string;
+  analysis: string;
+  actionPoints: string[];
+  whyItsImportantForYou: string;
+}
+
+export interface CVJobRecommendation {
+  jobId: string;
+  title: string;
+  companyName: string;
+  matchScore: number;
+  reason: string;
+  nextStep: string;
+}
+
+export interface CVAnalysisResult {
+  id: string;
+  schemaVersion: string;
+  jobFitAlignment: {
+    score: number;
+    summary: string;
+  };
+  atsFriendliness: {
+    score: number;
+    summary: string;
+  };
+  overallImpression: string;
+  topActionables: string[];
+  sectionReviews: CVSectionReview[];
+  jobRecommendations: CVJobRecommendation[];
+  generatedCv: {
+    available: boolean;
+    note: string;
+  };
+  model: {
+    name: string;
+    version: string;
+  };
+  analyzedAt: string;
+}
+
+export interface CVAnalyzerResponse {
+  success: boolean;
+  message: string;
+  data: {
+    jobRoles: string[];
+    language: string;
+    analysisResult: CVAnalysisResult;
+  };
+  meta: unknown;
+}
+
+export interface AnalyzeCVPayload {
+  jobRoles: string[];
+  cvFile: File;
+  cvFileId?: string | null;
+  language?: string;
+}
+
+export const CV_ANALYZER_RESULT_STORAGE_KEY = "bisakerja_cv_analyzer_result";
+
 /* ─── Token helpers ─── */
 
 export function getAccessToken(): string | null {
@@ -459,6 +550,7 @@ export async function verifyEmail(
 /* ─── Profile / Me API ─── */
 
 export interface ProfilePhoto {
+  storageKey?: string;
   url: string;
   mimeType: string;
   sizeBytes: number;
@@ -467,26 +559,26 @@ export interface ProfilePhoto {
 export interface ProfileSkill {
   id: string;
   name: string;
-  level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT" | string;
+  level: "BASIC" | "INTERMEDIATE" | "ADVANCED" | string | null;
 }
 
 export interface ProfileExperience {
   id: string;
   title: string;
-  company: string;
-  employmentType: string;
-  startDate: string;
+  company: string | null;
+  employmentType: string | null;
+  startDate: string | null;
   endDate: string | null;
   isCurrent: boolean;
-  description: string;
+  description: string | null;
 }
 
 export interface ProfileEducation {
   id: string;
   institution: string;
-  degree: string;
-  fieldOfStudy: string;
-  startYear: number;
+  degree: string | null;
+  fieldOfStudy: string | null;
+  startYear: number | null;
   endYear: number | null;
 }
 
@@ -495,14 +587,14 @@ export interface ProfileData {
   username: string;
   email: string;
   emailVerified: boolean;
-  phoneNumber: string;
-  displayName: string;
+  phoneNumber: string | null;
+  displayName: string | null;
   profilePhoto: ProfilePhoto | null;
   onboardingStatus: string;
   profile: {
-    careerStatus: string;
-    latestRole: string;
-    summary: string;
+    careerStatus: string | null;
+    latestRole: string | null;
+    summary: string | null;
   } | null;
   skills: ProfileSkill[];
   experience: ProfileExperience[];
@@ -518,8 +610,137 @@ export interface ProfileResponse {
   meta: null;
 }
 
+export interface UpdateProfilePayload {
+  username?: string;
+  phoneNumber?: string;
+  displayName?: string;
+}
+
+export interface ProfilePhotoUpsertPayload {
+  storageKey: string;
+  url?: string | null;
+  mimeType: "image/jpeg" | "image/png" | "image/webp" | string;
+  sizeBytes: number;
+}
+
+export interface ReplaceSkillPayload {
+  name: string;
+  level?: "BASIC" | "INTERMEDIATE" | "ADVANCED" | string;
+}
+
+export interface ReplaceExperiencePayload {
+  title: string;
+  company?: string | null;
+  employmentType?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  isCurrent?: boolean;
+  description?: string | null;
+}
+
+export interface ReplaceEducationPayload {
+  institution: string;
+  degree: string;
+  fieldOfStudy: string;
+  startYear?: number | null;
+  endYear?: number | null;
+}
+
 export async function fetchProfile(): Promise<ProfileResponse> {
   return apiFetch<ProfileResponse>("/me");
+}
+
+export async function updateProfile(
+  payload: UpdateProfilePayload,
+): Promise<ProfileResponse> {
+  return apiFetch<ProfileResponse>("/me", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateProfilePhoto(
+  payload: ProfilePhotoUpsertPayload,
+): Promise<ProfileResponse> {
+  return apiFetch<ProfileResponse>("/me/profile-photo", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateProfileSkills(
+  skills: ReplaceSkillPayload[],
+): Promise<ProfileResponse> {
+  return apiFetch<ProfileResponse>("/me/skills", {
+    method: "PUT",
+    body: JSON.stringify({ skills }),
+  });
+}
+
+export async function updateProfileExperience(
+  experience: ReplaceExperiencePayload[],
+): Promise<ProfileResponse> {
+  return apiFetch<ProfileResponse>("/me/experience", {
+    method: "PUT",
+    body: JSON.stringify({ experience }),
+  });
+}
+
+export async function updateProfileEducation(
+  education: ReplaceEducationPayload[],
+): Promise<ProfileResponse> {
+  return apiFetch<ProfileResponse>("/me/education", {
+    method: "PUT",
+    body: JSON.stringify({ education }),
+  });
+}
+
+export async function fetchActiveCVFile(): Promise<ActiveCVFileResponse> {
+  return apiFetch<ActiveCVFileResponse>("/me/cv-files/active");
+}
+
+export async function uploadCVFile(
+  cvFile: File,
+  setAsActive = true,
+): Promise<UploadCVFileResponse> {
+  const formData = new FormData();
+  formData.append("setAsActive", String(setAsActive));
+  formData.append("cvFile", cvFile);
+
+  return apiFetch<UploadCVFileResponse>("/me/cv-files", {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export async function analyzeCV(
+  payload: AnalyzeCVPayload,
+): Promise<CVAnalyzerResponse> {
+  const formData = new FormData();
+
+  if (payload.jobRoles.length === 0) {
+    formData.append("jobRoles", "");
+  } else {
+    payload.jobRoles.forEach((role) => {
+      formData.append("jobRoles", role);
+    });
+  }
+
+  formData.append("language", payload.language ?? "id");
+  formData.append("inputMode", "UPLOAD");
+  formData.append("compareSource", "JOB_SEARCH");
+  formData.append("persistResult", "false");
+
+  if (payload.cvFileId) {
+    formData.append("cvFileId", payload.cvFileId);
+  }
+
+  formData.append("cvFile", payload.cvFile);
+
+  return apiFetch<CVAnalyzerResponse>("/ai/cv-analyzer", {
+    method: "POST",
+    body: formData,
+  });
 }
 
 /* ─── User API ─── */
