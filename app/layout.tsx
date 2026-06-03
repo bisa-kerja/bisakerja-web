@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "BisaKerja",
-  description: "Platform Decision maker untuk para pencari kerja",
+  description: "Decision-making platform for job seekers",
 };
 
 export default function RootLayout({

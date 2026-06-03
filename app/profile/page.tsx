@@ -115,17 +115,17 @@ function formatDateRange(
   endDate: string | null,
   isCurrent: boolean,
 ): string {
-  if (!startDate) return isCurrent ? "Sekarang" : "-";
+  if (!startDate) return isCurrent ? "Present" : "-";
 
   const fmt = (d: string) => {
     const date = new Date(d);
-    return date.toLocaleDateString("id-ID", {
+    return date.toLocaleDateString("en-US", {
       month: "short",
       year: "numeric",
     });
   };
 
-  return `${fmt(startDate)} - ${isCurrent ? "Sekarang" : endDate ? fmt(endDate) : ""}`;
+  return `${fmt(startDate)} - ${isCurrent ? "Present" : endDate ? fmt(endDate) : ""}`;
 }
 
 function dateInputValue(date: string | null) {
@@ -158,7 +158,7 @@ function formatDateTime(value: string | null | undefined) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
 
-  return date.toLocaleDateString("id-ID", {
+  return date.toLocaleDateString("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -346,7 +346,7 @@ export default function ProfilePage() {
         if (err instanceof APIError && err.status === 401) {
           router.push("/login");
         } else {
-          setError(err instanceof Error ? err.message : "Gagal memuat profil");
+          setError(err instanceof Error ? err.message : "Failed to load profile");
         }
       })
       .finally(() => setIsLoading(false));
@@ -368,7 +368,7 @@ export default function ProfilePage() {
       router.push("/login");
       return;
     }
-    setError(err instanceof Error ? err.message : "Gagal menyimpan profil");
+    setError(err instanceof Error ? err.message : "Failed to save profile");
   };
 
   const startSaving = (section: SaveSection) => {
@@ -486,7 +486,7 @@ export default function ProfilePage() {
         return;
       }
 
-      setError(err instanceof Error ? err.message : "Gagal mengunggah CV");
+      setError(err instanceof Error ? err.message : "Failed to upload CV");
     } finally {
       setSavingSection(null);
       if (cvInputRef.current) cvInputRef.current.value = "";

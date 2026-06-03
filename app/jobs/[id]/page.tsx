@@ -18,10 +18,10 @@ import {
 
 /* ─── Enum label mappings ─── */
 const employmentTypeMap: Record<string, string> = {
-  FULL_TIME: "Penuh Waktu",
-  PART_TIME: "Paruh Waktu",
-  CONTRACT: "Kontrak",
-  INTERNSHIP: "Magang",
+  FULL_TIME: "Full Time",
+  PART_TIME: "Part Time",
+  CONTRACT: "Contract",
+  INTERNSHIP: "Internship",
   FREELANCE: "Freelance",
 };
 
@@ -51,11 +51,12 @@ function timeAgo(dateStr: string): string {
   const diffHr = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHr / 24);
 
-  if (diffMin < 1) return "Baru saja";
-  if (diffMin < 60) return `${diffMin} menit lalu`;
-  if (diffHr < 24) return `${diffHr} jam lalu`;
-  if (diffDay < 30) return `${diffDay} hari lalu`;
-  return `${Math.floor(diffDay / 30)} bulan lalu`;
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? "" : "s"} ago`;
+  if (diffHr < 24) return `${diffHr} hour${diffHr === 1 ? "" : "s"} ago`;
+  if (diffDay < 30) return `${diffDay} day${diffDay === 1 ? "" : "s"} ago`;
+  const months = Math.floor(diffDay / 30);
+  return `${months} month${months === 1 ? "" : "s"} ago`;
 }
 
 /* ─── SVG Icon Components ─── */
@@ -302,7 +303,7 @@ export default function JobDetailPage({
         }
       } catch {
         if (!cancelled) {
-          setError("Gagal memuat detail lowongan. Silakan coba lagi.");
+          setError("Failed to load job details. Please try again.");
         }
       } finally {
         if (!cancelled) {
@@ -374,7 +375,7 @@ export default function JobDetailPage({
         <main className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <SpinnerIcon />
-            <p className="text-sm text-gray-500">Memuat detail lowongan...</p>
+            <p className="text-sm text-gray-500">Loading job details...</p>
           </div>
         </main>
         <Footer />
@@ -392,16 +393,16 @@ export default function JobDetailPage({
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Lowongan Tidak Ditemukan
+              Job Not Found
             </h1>
             <p className="text-gray-500 mb-6">
-              {error || "Lowongan yang kamu cari tidak tersedia."}
+              {error || "The job you're looking for is not available."}
             </p>
             <Link
               href="/"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium no-underline hover:bg-blue-700 transition-colors"
             >
-              <ArrowLeftIcon /> Kembali ke Beranda
+              <ArrowLeftIcon /> Back to Home
             </Link>
           </div>
         </main>
@@ -439,7 +440,7 @@ export default function JobDetailPage({
         notes: `Applied from ${job.sourcePlatform?.name ?? "job detail"} after clicking apply.`,
         source: "EXTERNAL_APPLY_CLICK",
       });
-      setApplyMessage("Lamaran ditambahkan ke Application Tracker.");
+      setApplyMessage("Application added to Application Tracker.");
 
       if (job.externalApplyUrl) {
         window.open(job.externalApplyUrl, "_blank", "noopener,noreferrer");
@@ -453,7 +454,7 @@ export default function JobDetailPage({
       setApplyError(
         error instanceof Error
           ? error.message
-          : "Gagal menambahkan lamaran ke Application Tracker.",
+          : "Failed to add application to Application Tracker.",
       );
     } finally {
       setIsApplying(false);
@@ -482,7 +483,7 @@ export default function JobDetailPage({
       }
 
       setBookmarkError(
-        error instanceof Error ? error.message : "Gagal memperbarui bookmark",
+        error instanceof Error ? error.message : "Failed to update bookmark",
       );
     } finally {
       setIsBookmarkLoading(false);
@@ -493,7 +494,7 @@ export default function JobDetailPage({
     const shareUrl = window.location.href;
     const shareData = {
       title: job.title,
-      text: `${job.title} di ${job.company.name}`,
+      text: `${job.title} at ${job.company.name}`,
       url: shareUrl,
     };
 
@@ -506,13 +507,13 @@ export default function JobDetailPage({
       }
 
       await navigator.clipboard.writeText(shareUrl);
-      setShareMessage("Link lowongan disalin.");
+      setShareMessage("Job link copied.");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         return;
       }
 
-      setShareMessage("Gagal membagikan link lowongan.");
+      setShareMessage("Failed to share job link.");
     }
   };
 
@@ -530,7 +531,7 @@ export default function JobDetailPage({
           className="inline-flex items-center gap-1.5 text-blue-600 text-sm font-medium no-underline hover:text-blue-700 transition-colors"
         >
           <ArrowLeftIcon />
-          Kembali ke Lowongan
+          Back to Jobs
         </Link>
       </div>
 
@@ -593,7 +594,7 @@ export default function JobDetailPage({
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg border-none text-sm font-semibold cursor-pointer hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:cursor-wait disabled:opacity-70"
             >
               {isApplying
-                ? "Menyimpan..."
+                ? "Saving..."
                 : job.externalApplyUrl
                   ? `Apply on ${job.sourcePlatform?.name || "Platform"}`
                   : "Apply"}
@@ -615,7 +616,7 @@ export default function JobDetailPage({
                 disabled={isBookmarkLoading}
                 title={
                   bookmarkError ??
-                  (isBookmarked ? "Hapus bookmark" : "Simpan lowongan")
+                  (isBookmarked ? "Remove bookmark" : "Save job")
                 }
                 onClick={handleBookmarkClick}
                 className={`flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-sm font-medium transition-colors p-0 disabled:cursor-wait disabled:opacity-60 ${
@@ -639,7 +640,7 @@ export default function JobDetailPage({
             {(bookmarkError || shareMessage) && (
               <p
                 className={`max-w-[280px] text-right text-xs font-medium ${
-                  bookmarkError || shareMessage?.startsWith("Gagal")
+                  bookmarkError || shareMessage?.startsWith("Failed")
                     ? "text-red-600"
                     : "text-green-600"
                 }`}
@@ -668,7 +669,7 @@ export default function JobDetailPage({
             {job.description && (
               <div className="mb-10">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Tentang Posisi Ini
+                  About This Position
                 </h2>
                 <div
                   className="text-[15px] text-gray-600 leading-relaxed prose prose-sm max-w-none"
@@ -681,7 +682,7 @@ export default function JobDetailPage({
             {qualificationReqs.length > 0 && (
               <div className="mb-10">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Persyaratan
+                  Requirements
                 </h2>
                 <ul className="list-none p-0 m-0 flex flex-col gap-3">
                   {qualificationReqs.map((req, i) => (
@@ -702,7 +703,7 @@ export default function JobDetailPage({
             {job.skills && job.skills.length > 0 && (
               <div className="mb-10">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Skills yang Dibutuhkan
+                  Required Skills
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {job.skills.map((skill) => (
@@ -723,14 +724,14 @@ export default function JobDetailPage({
             {/* Job Details Card */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-base font-bold text-gray-900 m-0 mb-5">
-                Detail Pekerjaan
+                Job Details
               </h3>
 
               {/* Location & Job Type */}
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
-                    LOKASI
+                    LOCATION
                   </span>
                   <div className="flex items-start gap-1.5">
                     <span className="shrink-0 mt-0.5">
@@ -745,7 +746,7 @@ export default function JobDetailPage({
                 </div>
                 <div>
                   <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
-                    TIPE PEKERJAAN
+                    JOB TYPE
                   </span>
                   <div className="flex items-center gap-1.5">
                     <BriefcaseIcon />
@@ -760,7 +761,7 @@ export default function JobDetailPage({
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
-                    GAJI
+                    SALARY
                   </span>
                   <div className="flex items-center gap-1.5">
                     <MoneyBagIcon />
@@ -771,7 +772,7 @@ export default function JobDetailPage({
                 </div>
                 <div>
                   <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
-                    PENGALAMAN
+                    EXPERIENCE
                   </span>
                   <div className="flex items-center gap-1.5">
                     <TrendingUpIcon />
@@ -785,7 +786,7 @@ export default function JobDetailPage({
               {/* Work Type */}
               <div className="mb-4">
                 <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">
-                  MODE KERJA
+                  WORK MODE
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {workType}
@@ -805,7 +806,7 @@ export default function JobDetailPage({
             {/* About the Company Card */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-base font-bold text-gray-900 m-0 mb-3">
-                Tentang Perusahaan
+                About the Company
               </h3>
               <div className="flex items-center gap-3 mb-3">
                 {job.company.logoUrl ? (
@@ -845,7 +846,7 @@ export default function JobDetailPage({
             {/* Posted Info */}
             <div className="flex items-center justify-center gap-1.5 text-gray-400 text-xs py-2">
               <ClockIcon />
-              <span>Diposting {timeAgo(job.postedAt)}</span>
+              <span>Posted {timeAgo(job.postedAt)}</span>
             </div>
           </aside>
         </div>

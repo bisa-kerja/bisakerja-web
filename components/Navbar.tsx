@@ -296,14 +296,14 @@ export default function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="bg-blue-600 text-white px-4 py-2.5 rounded-lg border-none text-[14px] font-semibold cursor-pointer text-center no-underline transition-all duration-200"
               >
-                Masuk
+                Login
               </Link>
               <Link
                 href="/register"
                 onClick={() => setMobileMenuOpen(false)}
                 className="bg-white border border-gray-200 text-blue-600 px-4 py-2.5 rounded-lg text-[14px] font-semibold cursor-pointer text-center no-underline transition-all duration-200"
               >
-                Daftar
+                Register
               </Link>
             </div>
           )}

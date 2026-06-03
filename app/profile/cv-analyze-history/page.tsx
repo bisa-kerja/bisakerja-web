@@ -30,7 +30,7 @@ function formatDateTime(dateValue: string): string {
   const date = new Date(dateValue);
   if (Number.isNaN(date.getTime())) return "-";
 
-  return date.toLocaleDateString("id-ID", {
+  return date.toLocaleDateString("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -42,10 +42,10 @@ function formatDateTime(dateValue: string): string {
 function formatFileSize(sizeBytes: number | undefined): string {
   if (!sizeBytes) return "-";
   if (sizeBytes < 1024 * 1024) {
-    return `${Math.round(sizeBytes / 1024).toLocaleString("id-ID")} KB`;
+    return `${Math.round(sizeBytes / 1024).toLocaleString("en-US")} KB`;
   }
 
-  return `${(sizeBytes / (1024 * 1024)).toLocaleString("id-ID", {
+  return `${(sizeBytes / (1024 * 1024)).toLocaleString("en-US", {
     maximumFractionDigits: 1,
   })} MB`;
 }

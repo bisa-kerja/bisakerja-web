@@ -63,10 +63,10 @@ function MoneyIcon() {
 
 /* ─── Employment type display mapping ─── */
 const employmentTypeMap: Record<string, { label: string; color: string }> = {
-  FULL_TIME: { label: "Penuh Waktu", color: "#16A34A" },
-  PART_TIME: { label: "Paruh Waktu", color: "#EA580C" },
-  CONTRACT: { label: "Kontrak", color: "#3B82F6" },
-  INTERNSHIP: { label: "Magang", color: "#8B5CF6" },
+  FULL_TIME: { label: "Full Time", color: "#16A34A" },
+  PART_TIME: { label: "Part Time", color: "#EA580C" },
+  CONTRACT: { label: "Contract", color: "#3B82F6" },
+  INTERNSHIP: { label: "Internship", color: "#8B5CF6" },
   FREELANCE: { label: "Freelance", color: "#D97706" },
 };
 
@@ -96,11 +96,11 @@ function timeAgo(dateStr: string): string {
   const diffHr = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHr / 24);
 
-  if (diffMin < 1) return "Baru saja";
-  if (diffMin < 60) return `${diffMin}m lalu`;
-  if (diffHr < 24) return `${diffHr}h lalu`;
-  if (diffDay < 30) return `${diffDay}d lalu`;
-  return `${Math.floor(diffDay / 30)}mo lalu`;
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffDay < 30) return `${diffDay}d ago`;
+  return `${Math.floor(diffDay / 30)}mo ago`;
 }
 
 /* ─── Types ─── */
@@ -187,7 +187,7 @@ export default function JobCard({
       }
 
       setBookmarkError(
-        error instanceof Error ? error.message : "Gagal memperbarui bookmark",
+        error instanceof Error ? error.message : "Failed to update bookmark",
       );
     } finally {
       setIsBookmarkLoading(false);
@@ -229,9 +229,9 @@ export default function JobCard({
         </div>
         <button
           type="button"
-          aria-label={isBookmarked ? "Hapus bookmark" : "Simpan lowongan"}
+          aria-label={isBookmarked ? "Remove bookmark" : "Save job"}
           aria-pressed={isBookmarked}
-          title={bookmarkError ?? (isBookmarked ? "Hapus bookmark" : "Simpan lowongan")}
+          title={bookmarkError ?? (isBookmarked ? "Remove bookmark" : "Save job")}
           disabled={isBookmarkLoading}
           className={`bg-transparent border-none cursor-pointer p-1 shrink-0 rounded-md transition-colors hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60 ${
             bookmarkError ? "ring-1 ring-red-200" : ""
@@ -273,7 +273,7 @@ export default function JobCard({
 
       {/* Active Time */}
       <p className="text-xs text-gray-400 m-0 mt-auto pt-2 border-t border-gray-100">
-        Diposting {timeAgo(job.postedAt)}
+        Posted {timeAgo(job.postedAt)}
       </p>
     </Link>
   );

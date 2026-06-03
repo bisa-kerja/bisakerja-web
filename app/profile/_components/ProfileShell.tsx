@@ -147,7 +147,7 @@ export function ProfileShell({
             {children}
 
             <footer className="mt-12 flex flex-col md:flex-row items-center justify-between text-[13px] text-gray-400 gap-4">
-              <p>© 2024 Bisakerja. Temukan karier impianmu.</p>
+              <p>© 2024 Bisakerja. Find your dream career.</p>
               <div className="flex gap-4 md:gap-6 flex-wrap justify-center">
                 <a href="#" className="hover:text-gray-600 transition-colors">
                   Privacy Policy

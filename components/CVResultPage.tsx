@@ -348,7 +348,7 @@ function TemplatePickerModal({
               id="template-picker-title"
               className="text-[22px] font-extrabold text-slate-800 m-0"
             >
-              Pilih template CV kamu
+              Choose your CV template
             </h2>
           </div>
           <button
@@ -658,12 +658,12 @@ export default function CVResultPage() {
         {/* Text overlay at the top of the banner */}
         <div className="absolute top-[20%] left-0 w-full pt-8 px-6">
           <h1 className="text-[22px] md:text-[32px] font-extrabold text-white m-0 mb-2 drop-shadow-lg">
-            Hasil Review CV Kamu
+            Your CV Review Result
           </h1>
           <p className="text-[13px] md:text-[15px] text-white/80 m-0 drop-shadow-md">
             {analysisResponse
               ? `Target role: ${analysisResponse.data.jobRoles.join(", ")}`
-              : "Perbaiki CV kamu agar lebih mudah dapat panggilan HR. Semangat!"}
+              : "Fix your CV to get more HR calls. Keep it up!"}
           </p>
         </div>
       </div>
@@ -789,20 +789,20 @@ export default function CVResultPage() {
                   <h3
                     className="text-[17px] font-extrabold text-slate-800 m-0 leading-[1.2]"
                   >
-                    Lowongan yang Cocok dengan CV Kamu
+                    Jobs Matching Your CV
                   </h3>
                   <p
                     className="text-[12px] text-slate-500 m-0 mt-[3px]"
                   >
-                    Berdasarkan keahlian &amp; pengalaman yang terdeteksi dari
-                    CV kamu
+                    Based on skills & experience detected from
+                    your CV
                   </p>
                 </div>
               </div>
               <span
                 className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200 whitespace-nowrap"
               >
-                {jobRecommendations.length} lowongan
+                {jobRecommendations.length} job{jobRecommendations.length === 1 ? "" : "s"}
               </span>
             </div>
 
@@ -821,7 +821,7 @@ export default function CVResultPage() {
             ) : (
               <div className="rounded-xl border border-dashed border-gray-200 bg-slate-50 px-5 py-6 text-center">
                 <p className="m-0 text-[13px] font-semibold text-slate-500">
-                  Rekomendasi lowongan akan muncul setelah analisis CV selesai.
+                  Job recommendations will appear after CV analysis is complete.
                 </p>
               </div>
             )}
@@ -833,7 +833,7 @@ export default function CVResultPage() {
               <button
                 className="flex items-center gap-1.5 px-7 py-2.5 rounded-full border-[1.5px] border-blue-600 bg-transparent text-blue-600 text-[14px] font-semibold cursor-pointer transition-colors duration-200 ease-in-out hover:bg-blue-50"
               >
-                Lihat Semua Lowongan
+                View All Jobs
                 <svg
                   width="14"
                   height="14"
@@ -881,7 +881,7 @@ export default function CVResultPage() {
                     <h4
                       className="text-[14px] font-bold text-slate-800 m-0 mb-1"
                     >
-                      Rekomendasi {i + 1}
+                      Recommendation {i + 1}
                     </h4>
                     <p
                       className="text-[13px] text-slate-500 leading-[1.65] m-0"

@@ -42,7 +42,7 @@ export default function SavedJobsPage() {
         router.push("/login");
       } else {
         setBookmarkError(
-          err instanceof Error ? err.message : "Gagal memuat bookmark",
+          err instanceof Error ? err.message : "Failed to load bookmarks",
         );
       }
     } finally {
@@ -140,10 +140,10 @@ export default function SavedJobsPage() {
                   }
                   className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
-                  Sebelumnya
+                  Previous
                 </button>
                 <span className="text-[13px] text-gray-500">
-                  Halaman {bookmarkPagination.page} dari{" "}
+                  Page {bookmarkPagination.page} of{" "}
                   {bookmarkPagination.totalPages}
                 </span>
                 <button
@@ -151,7 +151,7 @@ export default function SavedJobsPage() {
                   onClick={() => setBookmarkPage((current) => current + 1)}
                   className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
-                  Selanjutnya
+                  Next
                 </button>
               </div>
             )}
@@ -162,10 +162,10 @@ export default function SavedJobsPage() {
               <BookmarkIcon className="w-6 h-6" />
             </div>
             <p className="text-[14px] font-semibold text-gray-700">
-              Belum ada lowongan tersimpan.
+              No saved jobs yet.
             </p>
             <p className="mt-1 text-[13px] text-gray-400">
-              Simpan lowongan dari daftar pekerjaan untuk melihatnya di sini.
+              Save jobs from the job list to see them here.
             </p>
           </div>
         )}

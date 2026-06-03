@@ -45,7 +45,7 @@ function ChevronDownIcon({ size = 14 }: { size?: number }) {
 
 function formatApplicationDate(dateStr: string): string {
   const date = new Date(dateStr);
-  return date.toLocaleDateString("id-ID", {
+  return date.toLocaleDateString("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -110,7 +110,7 @@ export default function ApplicationTrackerPage() {
         router.push("/login");
       } else {
         setApplicationError(
-          err instanceof Error ? err.message : "Gagal memuat lamaran",
+          err instanceof Error ? err.message : "Failed to load applications",
         );
       }
     } finally {
@@ -166,7 +166,7 @@ export default function ApplicationTrackerPage() {
         router.push("/login");
       } else {
         setApplicationError(
-          err instanceof Error ? err.message : "Gagal memperbarui status",
+          err instanceof Error ? err.message : "Failed to update status",
         );
       }
     } finally {
@@ -311,7 +311,7 @@ export default function ApplicationTrackerPage() {
                               )
                             }
                             className={`inline-flex items-center gap-1.5 min-w-[132px] justify-between rounded-full border-none px-3 py-1.5 text-[12px] font-bold outline-none cursor-pointer disabled:cursor-wait disabled:opacity-70 transition-colors ${statusStyle}`}
-                            aria-label={`Status lamaran ${application.job.title}`}
+                            aria-label={`Application status ${application.job.title}`}
                           >
                             {APPLICATION_STATUS_LABELS[application.status] ?? application.status}
                             <ChevronDownIcon size={12} />
@@ -352,10 +352,10 @@ export default function ApplicationTrackerPage() {
                         <FileTextIcon className="w-6 h-6" />
                       </div>
                       <p className="text-[14px] font-semibold text-gray-700">
-                        Belum ada lamaran terlacak.
+                        No tracked applications yet.
                       </p>
                       <p className="mt-1 text-[13px] text-gray-400">
-                        Klik Apply di detail lowongan untuk menambahkannya ke tracker.
+                        Click Apply on a job detail page to add it to your tracker.
                       </p>
                     </div>
                   </td>
@@ -376,10 +376,10 @@ export default function ApplicationTrackerPage() {
                 }
                 className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
               >
-                Sebelumnya
+                Previous
               </button>
               <span className="text-[13px] text-gray-500">
-                Halaman {applicationPagination.page} dari{" "}
+                Page {applicationPagination.page} of{" "}
                 {applicationPagination.totalPages}
               </span>
               <button
@@ -387,7 +387,7 @@ export default function ApplicationTrackerPage() {
                 onClick={() => setApplicationPage((current) => current + 1)}
                 className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
               >
-                Selanjutnya
+                Next
               </button>
             </div>
           )}

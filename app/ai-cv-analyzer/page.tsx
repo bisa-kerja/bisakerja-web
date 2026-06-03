@@ -350,7 +350,7 @@ export default function AICVAnalyzer() {
         jobRoles: targetRoles,
         cvFile: uploadedFile?.file,
         cvFileId: selectedActiveCVFileId,
-        language: "id",
+        language: "en",
       });
 
       sessionStorage.setItem(
@@ -376,7 +376,7 @@ export default function AICVAnalyzer() {
       setAnalysisError(
         error instanceof Error
           ? error.message
-          : "Gagal menganalisis CV. Silakan coba lagi.",
+          : "Failed to analyze CV. Please try again.",
       );
     }
   }, [isAnalyzing, router, selectedActiveCVFileId, targetRoles, uploadedFile]);
