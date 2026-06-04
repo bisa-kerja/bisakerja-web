@@ -400,8 +400,10 @@ export default function AICVAnalyzer() {
 
       setAnalysisError(
         error instanceof Error
-          ? error.message
-          : "Failed to analyze CV. Please try again.",
+          ? error.message == "Model API rejected the backend request" ? "Please Add Only CV / Resume Document" : error.message
+          : error instanceof APIError
+          ? error.message || "Failed to analyze CV. Please try again."
+          : "An unexpected error occurred. Please try again.",
       );
     }
   }, [activeCVFile, isAnalyzing, router, selectedActiveCVFileId, targetRoles, uploadedFile]);

@@ -418,18 +418,6 @@ function CVGenerationOverlay({
       <div
         className="w-[min(520px,100%)] bg-white border border-blue-200 rounded-[20px] shadow-[0_24px_70px_rgba(37,99,235,0.18)] p-7 text-center"
       >
-        <div
-          className="w-16 h-16 rounded-[18px] bg-blue-50 flex items-center justify-center mx-auto mb-4"
-        >
-          <SpinnerIcon />
-        </div>
-        <h2 className="text-[20px] font-extrabold text-slate-800 m-0 mb-1.5">
-          Generating optimized CV
-        </h2>
-        <p className="text-[13px] text-slate-500 m-0 mb-[22px]">
-          Template: {templateName}
-        </p>
-
         <div className="grid gap-[10px] text-left">
           {generationSteps.map((step, i) => {
             const isCompleted = i < currentStep;
@@ -1008,7 +996,8 @@ export default function CVResultPage() {
             <div
               className="flex justify-center mt-6"
             >
-              <button
+              <a
+                href="/jobs"
                 className="flex items-center gap-1.5 px-7 py-2.5 rounded-full border-[1.5px] border-blue-600 bg-transparent text-blue-600 text-[14px] font-semibold cursor-pointer transition-colors duration-200 ease-in-out hover:bg-blue-50"
               >
                 View All Jobs
@@ -1024,7 +1013,7 @@ export default function CVResultPage() {
                 >
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
-              </button>
+              </a>
             </div>
           </div>
 
