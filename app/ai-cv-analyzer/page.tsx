@@ -687,7 +687,7 @@ export default function AICVAnalyzer() {
 
             {/* Search Input */}
             <div ref={roleAutocompleteRef} className="relative mb-3">
-              <span className="absolute left-3.5 text-gray-400">
+              <span className="absolute left-3.5 top-[12px] text-gray-400">
                 <SearchIcon />
               </span>
               <input
