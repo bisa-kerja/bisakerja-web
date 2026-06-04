@@ -3,9 +3,13 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
+  APIError,
+  CV_ANALYZER_CONTEXT_STORAGE_KEY,
   CV_ANALYZER_RESULT_STORAGE_KEY,
   type CVAnalyzerResponse,
   type CVJobRecommendation,
+  type CVAnalysisResult,
+  generateOptimizedCV,
 } from "@/lib/api";
 
 interface DisplaySectionReview {
@@ -13,6 +17,18 @@ interface DisplaySectionReview {
   analysis: string;
   actionPoints: string[];
   importance: string;
+}
+
+interface CVAnalyzerStoredContext {
+  cvFileId: string | null;
+  originalFileName?: string | null;
+}
+
+interface GeneratedCVPreview {
+  previewHtml: string | null;
+  previewUrl: string | null;
+  downloadUrl: string | null;
+  downloadFileName: string;
 }
 
 /* ─── Icon Components ─── */
@@ -339,11 +355,6 @@ function TemplatePickerModal({
           className="flex items-start justify-between gap-4 mb-5"
         >
           <div>
-            <p
-              className="text-[11px] font-extrabold tracking-[1px] uppercase text-blue-600 m-0 mb-1.5"
-            >
-              Optimized CV Template
-            </p>
             <h2
               id="template-picker-title"
               className="text-[22px] font-extrabold text-slate-800 m-0"
@@ -381,9 +392,6 @@ function TemplatePickerModal({
                   <h3 className="text-[15px] font-extrabold text-slate-800 m-0 mb-1 transition-colors group-hover:text-[var(--hover-color)]" style={{ '--hover-color': template.accent } as React.CSSProperties}>
                     {template.name}
                   </h3>
-                  <p className="text-[12px] text-slate-500 leading-relaxed m-0">
-                    File: {template.path.replace("/templates/", "")}
-                  </p>
                 </div>
               </div>
             </button>
@@ -567,15 +575,128 @@ function readStoredCVAnalysis(): CVAnalyzerResponse | null {
   }
 }
 
+function readStoredCVContext(): CVAnalyzerStoredContext | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = sessionStorage.getItem(CV_ANALYZER_CONTEXT_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as CVAnalyzerStoredContext;
+  } catch {
+    return null;
+  }
+}
+
+function buildGenerationSummary(analysis: CVAnalysisResult | undefined): string {
+  if (!analysis) return overallImpression;
+
+  const summaryParts = [
+    analysis.overallImpression,
+    analysis.jobFitAlignment.summary,
+    analysis.atsFriendliness.summary,
+    analysis.topActionables.length > 0
+      ? `Optimization focus: ${analysis.topActionables.join(" ")}`
+      : "",
+  ].filter(Boolean);
+
+  return summaryParts.join("\n\n");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function findStringByKeys(
+  value: unknown,
+  keys: string[],
+  predicate: (candidate: string) => boolean,
+): string | null {
+  const queue: unknown[] = [value];
+  const visited = new Set<unknown>();
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!isRecord(current) || visited.has(current)) continue;
+    visited.add(current);
+
+    for (const key of keys) {
+      const candidate = current[key];
+      if (typeof candidate === "string" && predicate(candidate)) {
+        return candidate;
+      }
+    }
+
+    Object.values(current).forEach((child) => {
+      if (isRecord(child) || Array.isArray(child)) queue.push(child);
+      if (Array.isArray(child)) queue.push(...child);
+    });
+  }
+
+  return null;
+}
+
+function extractGeneratedCVPreview(
+  responseData: unknown,
+  fallbackFileName: string,
+): GeneratedCVPreview {
+  const htmlKeys = [
+    "html",
+    "templateHtml",
+    "previewHtml",
+    "generatedHtml",
+    "htmlContent",
+    "cvHtml",
+    "content",
+  ];
+  const urlKeys = [
+    "downloadUrl",
+    "pdfUrl",
+    "fileUrl",
+    "cvUrl",
+    "generatedCvUrl",
+    "url",
+  ];
+  const fileNameKeys = ["fileName", "filename", "downloadFileName", "name"];
+
+  const stringData = typeof responseData === "string" ? responseData : null;
+  const previewHtml =
+    stringData && stringData.includes("<")
+      ? stringData
+      : findStringByKeys(responseData, htmlKeys, (candidate) =>
+          candidate.includes("<"),
+        );
+  const downloadUrl =
+    stringData && /^(https?:|blob:|data:|\/)/.test(stringData)
+      ? stringData
+      : findStringByKeys(responseData, urlKeys, (candidate) =>
+          /^(https?:|blob:|data:|\/)/.test(candidate),
+        );
+  const downloadFileName =
+    findStringByKeys(responseData, fileNameKeys, (candidate) =>
+      candidate.trim().length > 0,
+    ) ?? fallbackFileName;
+
+  return {
+    previewHtml,
+    previewUrl: previewHtml ? null : downloadUrl,
+    downloadUrl,
+    downloadFileName,
+  };
+}
+
 /* ─── Main Result Page ─── */
 export default function CVResultPage() {
   const [analysisResponse, setAnalysisResponse] =
     useState<CVAnalyzerResponse | null>(null);
+  const [analysisContext, setAnalysisContext] =
+    useState<CVAnalyzerStoredContext | null>(null);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [isGeneratingCV, setIsGeneratingCV] = useState(false);
   const [generationStep, setGenerationStep] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState<(typeof cvTemplates)[0] | null>(null);
   const [generatedTemplateName, setGeneratedTemplateName] = useState<string | null>(null);
+  const [generatedCV, setGeneratedCV] = useState<GeneratedCVPreview | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   const analysis = analysisResponse?.data.analysisResult;
   const jobFitScore = analysis?.jobFitAlignment.score ?? 76;
@@ -595,6 +716,7 @@ export default function CVResultPage() {
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       setAnalysisResponse(readStoredCVAnalysis());
+      setAnalysisContext(readStoredCVContext());
     }, 0);
 
     return () => window.clearTimeout(timeout);
@@ -603,29 +725,85 @@ export default function CVResultPage() {
   useEffect(() => {
     if (!isGeneratingCV) return;
 
-    if (generationStep >= generationSteps.length) {
-      const timeout = setTimeout(() => {
-        setIsGeneratingCV(false);
-        setGenerationStep(0);
-        setGeneratedTemplateName(selectedTemplate?.name ?? null);
-      }, 700);
-
-      return () => clearTimeout(timeout);
-    }
-
     const timeout = setTimeout(() => {
-      setGenerationStep((prev) => prev + 1);
+      setGenerationStep((prev) =>
+        Math.min(prev + 1, generationSteps.length - 1),
+      );
     }, 1400);
 
     return () => clearTimeout(timeout);
-  }, [generationStep, isGeneratingCV, selectedTemplate]);
+  }, [generationStep, isGeneratingCV]);
 
-  const handleChooseTemplate = (template: (typeof cvTemplates)[0]) => {
+  useEffect(() => {
+    return () => {
+      if (generatedCV?.downloadUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(generatedCV.downloadUrl);
+      }
+    };
+  }, [generatedCV?.downloadUrl]);
+
+  const handleChooseTemplate = async (template: (typeof cvTemplates)[0]) => {
+    const cvFileId = analysisContext?.cvFileId;
+
+    if (!cvFileId) {
+      setShowTemplatePicker(false);
+      setGenerationError(
+        "CV file reference is missing. Please run the CV analysis again before generating an optimized CV.",
+      );
+      return;
+    }
+
     setSelectedTemplate(template);
     setGeneratedTemplateName(null);
+    setGeneratedCV(null);
+    setGenerationError(null);
     setShowTemplatePicker(false);
     setGenerationStep(0);
     setIsGeneratingCV(true);
+
+    try {
+      const templateResponse = await fetch(template.path);
+      if (!templateResponse.ok) {
+        throw new Error("Failed to load selected CV template.");
+      }
+
+      const templateHtml = await templateResponse.text();
+      const response = await generateOptimizedCV({
+        cvFileId,
+        summary: buildGenerationSummary(analysis),
+        templateHtml,
+      });
+      const generatedPreview = extractGeneratedCVPreview(
+        response.data,
+        `${template.name.toLowerCase().replace(/\s+/g, "-")}-optimized-cv.html`,
+      );
+
+      if (!generatedPreview.previewHtml && !generatedPreview.previewUrl) {
+        throw new Error("The generated CV response did not include preview content.");
+      }
+
+      if (!generatedPreview.downloadUrl && generatedPreview.previewHtml) {
+        generatedPreview.downloadUrl = URL.createObjectURL(
+          new Blob([generatedPreview.previewHtml], { type: "text/html" }),
+        );
+      }
+
+      setGeneratedCV(generatedPreview);
+      setGeneratedTemplateName(template.name);
+    } catch (error) {
+      if (error instanceof APIError && error.status === 401) {
+        setGenerationError("Please log in again before generating your optimized CV.");
+      } else {
+        setGenerationError(
+          error instanceof Error
+            ? error.message
+            : "Failed to generate optimized CV. Please try again.",
+        );
+      }
+    } finally {
+      setIsGeneratingCV(false);
+      setGenerationStep(0);
+    }
   };
 
   return (
@@ -897,6 +1075,11 @@ export default function CVResultPage() {
             <div
               className="flex flex-col items-center justify-center gap-3 mt-7"
             >
+              {generationError && (
+                <div className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center text-[13px] font-semibold text-red-700">
+                  {generationError}
+                </div>
+              )}
               {generatedTemplateName && (
                 <div
                   className="flex items-center gap-2 px-3.5 py-[9px] rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[13px] font-bold"
@@ -907,12 +1090,60 @@ export default function CVResultPage() {
               )}
               <button
                 onClick={() => setShowTemplatePicker(true)}
-                className="flex items-center gap-2 px-9 py-3.5 rounded-full border-none bg-gradient-to-br from-blue-600 to-blue-600 text-white text-[15px] font-bold cursor-pointer shadow-[0_4px_20px_rgba(220,38,38,0.3)] transition-transform duration-200 ease-in-out hover:-translate-y-px"
+                className="flex items-center gap-2 px-9 py-3.5 rounded-full border-none bg-gradient-to-br from-blue-600 to-blue-600 text-white text-[15px] font-bold cursor-pointer transition-transform duration-200 ease-in-out hover:-translate-y-px"
               >
                 Generate Optimized CV
               </button>
             </div>
           </div>
+
+          {generatedCV && (
+            <div className="bg-white rounded-[16px] border border-gray-200 py-7 px-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-[18px] font-extrabold text-slate-800 m-0">
+                    Generated CV Preview
+                  </h3>
+                  <p className="text-[12px] text-slate-500 m-0 mt-[3px]">
+                    {generatedTemplateName
+                      ? `Optimized with ${generatedTemplateName}`
+                      : "Optimized CV is ready"}
+                  </p>
+                </div>
+                {generatedCV.downloadUrl && (
+                  <a
+                    href={generatedCV.downloadUrl}
+                    download={generatedCV.downloadFileName}
+                    target={
+                      generatedCV.downloadUrl.startsWith("blob:")
+                        ? undefined
+                        : "_blank"
+                    }
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-[13px] font-bold text-white transition-transform duration-200 ease-in-out hover:-translate-y-px"
+                  >
+                    Download CV
+                  </a>
+                )}
+              </div>
+
+              <div className="mt-5 h-[720px] overflow-hidden rounded-xl border border-gray-200 bg-slate-100">
+                {generatedCV.previewHtml ? (
+                  <iframe
+                    title="Generated optimized CV preview"
+                    srcDoc={generatedCV.previewHtml}
+                    className="h-full w-full border-0 bg-white"
+                  />
+                ) : generatedCV.previewUrl ? (
+                  <iframe
+                    title="Generated optimized CV preview"
+                    src={generatedCV.previewUrl}
+                    className="h-full w-full border-0 bg-white"
+                  />
+                ) : null}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

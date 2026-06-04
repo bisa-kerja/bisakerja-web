@@ -443,9 +443,24 @@ export interface AnalyzeCVPayload {
   cvFile?: File;
   cvFileId?: string | null;
   language?: string;
+  inputMode: "REFERENCE" | "UPLOAD";
+}
+
+export interface GenerateOptimizedCVPayload {
+  cvFileId: string;
+  summary: string;
+  templateHtml: string;
+}
+
+export interface GenerateOptimizedCVResponse {
+  success: boolean;
+  message: string;
+  data: unknown;
+  meta: unknown;
 }
 
 export const CV_ANALYZER_RESULT_STORAGE_KEY = "bisakerja_cv_analyzer_result";
+export const CV_ANALYZER_CONTEXT_STORAGE_KEY = "bisakerja_cv_analyzer_context";
 
 /* ─── Token helpers ─── */
 
@@ -585,12 +600,6 @@ export async function logoutUser(): Promise<{
   });
 }
 
-export async function refreshToken(): Promise<AuthResponse> {
-  return apiFetch<AuthResponse>("/auth/refresh", {
-    method: "POST",
-  });
-}
-
 /* ─── Verify Email ─── */
 
 export interface VerifyEmailPayload {
@@ -692,13 +701,6 @@ export interface UpdateProfilePayload {
   displayName?: string;
 }
 
-export interface ProfilePhotoUpsertPayload {
-  storageKey: string;
-  url?: string | null;
-  mimeType: "image/jpeg" | "image/png" | "image/webp" | string;
-  sizeBytes: number;
-}
-
 export interface ReplaceSkillPayload {
   name: string;
   level?: "BASIC" | "INTERMEDIATE" | "ADVANCED" | string;
@@ -731,15 +733,6 @@ export async function updateProfile(
 ): Promise<ProfileResponse> {
   return apiFetch<ProfileResponse>("/me", {
     method: "PATCH",
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function updateProfilePhoto(
-  payload: ProfilePhotoUpsertPayload,
-): Promise<ProfileResponse> {
-  return apiFetch<ProfileResponse>("/me/profile-photo", {
-    method: "PUT",
     body: JSON.stringify(payload),
   });
 }
@@ -803,7 +796,7 @@ export async function analyzeCV(
   }
 
   formData.append("language", payload.language ?? "id");
-  formData.append("inputMode", "UPLOAD");
+  formData.append("inputMode", payload.inputMode);
   formData.append("compareSource", "JOB_SEARCH");
   formData.append("persistResult", "false");
 
@@ -818,6 +811,15 @@ export async function analyzeCV(
   return apiFetch<CVAnalyzerResponse>("/ai/cv-analyzer", {
     method: "POST",
     body: formData,
+  });
+}
+
+export async function generateOptimizedCV(
+  payload: GenerateOptimizedCVPayload,
+): Promise<GenerateOptimizedCVResponse> {
+  return apiFetch<GenerateOptimizedCVResponse>("/ai/cv-generate", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
 

@@ -284,8 +284,6 @@ export default function JobDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
-  const [applyMessage, setApplyMessage] = useState<string | null>(null);
-  const [applyError, setApplyError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
   const [bookmarkError, setBookmarkError] = useState<string | null>(null);
@@ -427,11 +425,13 @@ export default function JobDetailPage({
     .toUpperCase();
 
   const handleApply = async () => {
+     if (job.externalApplyUrl) {
+        window.open(job.externalApplyUrl, "_blank", "noopener,noreferrer");
+      }
+      
     if (isApplying) return;
 
     setIsApplying(true);
-    setApplyMessage(null);
-    setApplyError(null);
 
     try {
       await createApplication({
@@ -440,7 +440,6 @@ export default function JobDetailPage({
         notes: `Applied from ${job.sourcePlatform?.name ?? "job detail"} after clicking apply.`,
         source: "EXTERNAL_APPLY_CLICK",
       });
-      setApplyMessage("Application added to Application Tracker.");
 
       if (job.externalApplyUrl) {
         window.open(job.externalApplyUrl, "_blank", "noopener,noreferrer");
@@ -450,12 +449,6 @@ export default function JobDetailPage({
         router.push("/login");
         return;
       }
-
-      setApplyError(
-        error instanceof Error
-          ? error.message
-          : "Failed to add application to Application Tracker.",
-      );
     } finally {
       setIsApplying(false);
     }
@@ -600,15 +593,6 @@ export default function JobDetailPage({
                   : "Apply"}
               <ExternalLinkIcon />
             </button>
-            {(applyMessage || applyError) && (
-              <p
-                className={`max-w-[280px] text-right text-xs font-medium ${
-                  applyError ? "text-red-600" : "text-green-600"
-                }`}
-              >
-                {applyError ?? applyMessage}
-              </p>
-            )}
             <div className="flex items-center gap-4">
               <button
                 type="button"

@@ -9,9 +9,11 @@ import { TestimonialsColumn } from "@/components/ui/testimonials-columns-1";
 import { motion } from "motion/react";
 import {
   APIError,
+  CV_ANALYZER_CONTEXT_STORAGE_KEY,
   CV_ANALYZER_RESULT_STORAGE_KEY,
   analyzeCV,
   fetchActiveCVFile,
+  uploadCVFile,
   type ActiveCVFile,
 } from "@/lib/api";
 
@@ -295,6 +297,8 @@ function FAQItem({ item, isOpen, onToggle }: { item: (typeof faqItems)[0]; isOpe
 }
 
 /* ─── Main Page ─── */
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
 export default function AICVAnalyzer() {
   const router = useRouter();
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
@@ -346,16 +350,37 @@ export default function AICVAnalyzer() {
     setIsAnalyzing(true);
 
     try {
+      let cvFileId = selectedActiveCVFileId;
+
+      if (!cvFileId && uploadedFile) {
+        const uploadResponse = await uploadCVFile(uploadedFile.file, false);
+        cvFileId = uploadResponse.data?.cvFile.id ?? null;
+      }
+
+      if (!cvFileId) {
+        throw new Error("Failed to prepare CV file. Please upload your CV again.");
+      }
+
       const response = await analyzeCV({
         jobRoles: targetRoles,
-        cvFile: uploadedFile?.file,
-        cvFileId: selectedActiveCVFileId,
+        cvFileId,
         language: "en",
+        inputMode: "REFERENCE",
       });
 
       sessionStorage.setItem(
         CV_ANALYZER_RESULT_STORAGE_KEY,
         JSON.stringify(response),
+      );
+      sessionStorage.setItem(
+        CV_ANALYZER_CONTEXT_STORAGE_KEY,
+        JSON.stringify({
+          cvFileId,
+          originalFileName:
+            activeCVFile?.id === cvFileId
+              ? activeCVFile.originalFileName
+              : uploadedFile?.name ?? null,
+        }),
       );
 
       setCurrentStep(loadingSteps.length);
@@ -379,13 +404,18 @@ export default function AICVAnalyzer() {
           : "Failed to analyze CV. Please try again.",
       );
     }
-  }, [isAnalyzing, router, selectedActiveCVFileId, targetRoles, uploadedFile]);
+  }, [activeCVFile, isAnalyzing, router, selectedActiveCVFileId, targetRoles, uploadedFile]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (selectedActiveCVFileId) return;
 
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        setAnalysisError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the maximum limit of 5 MB. Please upload a smaller file.`);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
       setUploadedFile({
         file,
         name: file.name,
@@ -403,6 +433,10 @@ export default function AICVAnalyzer() {
 
     const file = e.dataTransfer.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        setAnalysisError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the maximum limit of 5 MB. Please upload a smaller file.`);
+        return;
+      }
       setUploadedFile({
         file,
         name: file.name,
@@ -480,7 +514,7 @@ export default function AICVAnalyzer() {
         </div>
         <div className="relative max-w-[900px] mx-auto flex items-center justify-between gap-8">
           <div className="flex-1 text-left">
-            <h1 className="text-[28px] md:text-[34px] font-bold text-white leading-relaxed">
+            <h1 className="text-[28px] md:text-[34px] font-bold text-white leading-tight">
               Increase Your Chances of Passing<br/>
               <span className="text-yellow-300">CV ATS Screening by 73%</span>
             </h1>

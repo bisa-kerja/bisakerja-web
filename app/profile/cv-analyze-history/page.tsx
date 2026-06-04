@@ -2,11 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  Calendar,
   ChevronRight,
   FileText,
   Loader2,
-  Target,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";

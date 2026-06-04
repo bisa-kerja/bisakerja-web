@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { updatePreferences, PreferencesUpsertRequest } from "@/lib/api";
 
@@ -148,6 +148,152 @@ function SpinnerIcon() {
   );
 }
 
+type SearchableDropdownOption = {
+  label: string;
+  value: string;
+};
+
+function SearchableDropdown({
+  value,
+  options,
+  placeholder,
+  searchPlaceholder,
+  loadingMessage,
+  emptyMessage,
+  isLoading = false,
+  disabled = false,
+  onChange,
+}: {
+  value: string;
+  options: SearchableDropdownOption[];
+  placeholder: string;
+  searchPlaceholder: string;
+  loadingMessage: string;
+  emptyMessage: string;
+  isLoading?: boolean;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const selectedOption = options.find((option) => option.value === value);
+  const filteredOptions = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    if (!normalizedSearch) return options;
+
+    return options.filter((option) =>
+      option.label.toLowerCase().includes(normalizedSearch),
+    );
+  }, [options, search]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const timeoutId = window.setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isOpen]);
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        type="button"
+        onClick={() => {
+          if (disabled || isLoading) return;
+          setIsOpen((current) => !current);
+        }}
+        disabled={disabled || isLoading}
+        className={`flex h-11 w-full items-center justify-between gap-2 rounded-lg border bg-white px-3.5 text-left text-sm transition-colors ${
+          value
+            ? "border-blue-300 text-gray-900"
+            : "border-gray-200 text-gray-400"
+        } ${
+          disabled || isLoading
+            ? "cursor-not-allowed opacity-60"
+            : "cursor-pointer hover:border-gray-300 hover:bg-gray-50 focus:border-[#2B7FE0] focus:outline-none focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08]"
+        }`}
+      >
+        <span className="min-w-0 flex-1 truncate">
+          {isLoading ? loadingMessage : selectedOption?.label || placeholder}
+        </span>
+        <span className="shrink-0 text-gray-400">
+          {isLoading ? <SpinnerIcon /> : <ChevronDownIcon />}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full z-20 mt-1 w-full min-w-[220px] rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
+          <div className="px-2 pb-2">
+            <div className="relative flex items-center">
+              <span className="absolute left-3 text-gray-400">
+                <SearchIcon />
+              </span>
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder={searchPlaceholder}
+                className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-[13px] text-gray-900 outline-none placeholder:text-gray-400 focus:border-[#2B7FE0] focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08]"
+              />
+            </div>
+          </div>
+
+          <div className="max-h-56 overflow-y-auto py-1">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => {
+                const isSelected = option.value === value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      onChange(option.value);
+                      setSearch("");
+                      setIsOpen(false);
+                    }}
+                    className={`w-full border-none bg-transparent px-3 py-2 text-left text-[13px] transition-colors ${
+                      isSelected
+                        ? "bg-blue-50 font-medium text-blue-600"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })
+            ) : (
+              <p className="px-3 py-2 text-[13px] text-gray-400">
+                {emptyMessage}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Data ─── */
 const careerStages = [
   {
@@ -197,9 +343,10 @@ export default function JobReferencePage() {
   >([]);
   const [isLoadingProvinces, setIsLoadingProvinces] = useState(true);
   const [isLoadingCities, setIsLoadingCities] = useState(false);
-  const [selectedArrangements, setSelectedArrangements] = useState([""]);
+  const [selectedArrangements, setSelectedArrangements] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
   // Fetch all Indonesian provinces from the official wilayah API on mount
@@ -209,7 +356,11 @@ export default function JobReferencePage() {
       .then((data: { id: string; name: string }[]) => {
         setProvinces(data);
         const defaultProvince = data.find((p) => p.id === "31"); // DKI JAKARTA
-        if (defaultProvince) setProvince(defaultProvince.name);
+        if (defaultProvince) {
+          setSelectedProvinceId(defaultProvince.id);
+          setProvince(defaultProvince.name);
+          setIsLoadingCities(true);
+        }
       })
       .catch((err) => console.error("Failed to fetch provinces:", err))
       .finally(() => setIsLoadingProvinces(false));
@@ -227,6 +378,44 @@ export default function JobReferencePage() {
       .catch((err) => console.error("Failed to fetch cities:", err))
       .finally(() => setIsLoadingCities(false));
   }, [selectedProvinceId]);
+
+  const provinceOptions = useMemo(
+    () => provinces.map((item) => ({ label: item.name, value: item.id })),
+    [provinces],
+  );
+
+  const cityOptions = useMemo(
+    () => cities.map((item) => ({ label: item.name, value: item.name })),
+    [cities],
+  );
+
+  const handleProvinceChange = (id: string) => {
+    const found = provinces.find((p) => p.id === id);
+    setSelectedProvinceId(id);
+    setProvince(found?.name ?? "");
+    setCities([]);
+    setCity("");
+    if (id) setIsLoadingCities(true);
+
+    if (found) {
+      setFieldErrors((e2) => {
+        const copy = { ...e2 };
+        delete copy.province;
+        return copy;
+      });
+    }
+  };
+
+  const handleCityChange = (value: string) => {
+    setCity(value);
+    if (value) {
+      setFieldErrors((prev) => {
+        const copy = { ...prev };
+        delete copy.city;
+        return copy;
+      });
+    }
+  };
 
   const stageIcon = (type: string, isActive: boolean) => {
     const color = isActive ? "text-white" : "text-gray-400";
@@ -261,6 +450,7 @@ export default function JobReferencePage() {
   const addRole = (role: string) => {
     if (!targetRoles.includes(role)) {
       setTargetRoles([...targetRoles, role]);
+      setFieldErrors((e) => { const copy = { ...e }; delete copy.roles; return copy; });
     }
   };
 
@@ -273,11 +463,27 @@ export default function JobReferencePage() {
   };
 
   const toggleArrangement = (arrangement: string) => {
-    setSelectedArrangements((prev) =>
-      prev.includes(arrangement)
+    setSelectedArrangements((prev) => {
+      const next = prev.includes(arrangement)
         ? prev.filter((a) => a !== arrangement)
-        : [...prev, arrangement],
-    );
+        : [...prev, arrangement];
+      if (next.length > 0) {
+        setFieldErrors((e) => { const copy = { ...e }; delete copy.arrangements; return copy; });
+      }
+      return next;
+    });
+  };
+
+  const validateFields = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (!selectedStage) errors.stage = "Please select your career stage.";
+    if (!selectedStatus) errors.status = "Please select your job seeking status.";
+    if (targetRoles.length === 0) errors.roles = "Please add at least one target role.";
+    if (!province) errors.province = "Please select a province.";
+    if (!city) errors.city = "Please select a city.";
+    if (selectedArrangements.length === 0) errors.arrangements = "Please select at least one work arrangement.";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const HandleBackStep = () => {
@@ -285,6 +491,7 @@ export default function JobReferencePage() {
   };
 
   const HandleNextStep = async () => {
+    if (!validateFields()) return;
     setIsSubmitting(true);
     setApiError(null);
 
@@ -304,7 +511,7 @@ export default function JobReferencePage() {
               : "THREE_MONTHS",
         targetRoles: targetRoles,
         locations: [{ province, city }],
-        workTypes: selectedArrangements.map((arr) => {
+        workTypes: selectedArrangements.filter(Boolean).map((arr) => {
           if (arr === "Hybrid") return "HYBRID";
           if (arr === "Remote") return "REMOTE";
           return "ONSITE";
@@ -387,7 +594,10 @@ export default function JobReferencePage() {
                   <button
                     key={stage.id}
                     type="button"
-                    onClick={() => setSelectedStage(stage.id)}
+                    onClick={() => {
+                      setSelectedStage(stage.id);
+                      setFieldErrors((e) => { const copy = { ...e }; delete copy.stage; return copy; });
+                    }}
                     className={`relative flex items-center gap-3 px-4 py-4 rounded-xl border-2 transition-all duration-200 cursor-pointer bg-transparent text-left ${
                       isActive
                         ? "border-[#2B7FE0] bg-[#2B7FE0]/[0.03]"
@@ -417,6 +627,9 @@ export default function JobReferencePage() {
                 );
               })}
             </div>
+            {fieldErrors.stage && (
+              <p className="text-xs text-red-500 mt-2 font-medium">{fieldErrors.stage}</p>
+            )}
           </div>
 
           {/* Job Seeking Status */}
@@ -431,7 +644,10 @@ export default function JobReferencePage() {
                   <button
                     key={status}
                     type="button"
-                    onClick={() => setSelectedStatus(status)}
+                    onClick={() => {
+                      setSelectedStatus(status);
+                      setFieldErrors((e) => { const copy = { ...e }; delete copy.status; return copy; });
+                    }}
                     className={`px-5 py-2 rounded-full border text-sm font-medium transition-all duration-200 cursor-pointer ${
                       isActive
                         ? "bg-[#2B7FE0] text-white border-[#2B7FE0]"
@@ -443,6 +659,9 @@ export default function JobReferencePage() {
                 );
               })}
             </div>
+            {fieldErrors.status && (
+              <p className="text-xs text-red-500 mt-2 font-medium">{fieldErrors.status}</p>
+            )}
           </div>
 
           {/* Target Roles */}
@@ -504,6 +723,9 @@ export default function JobReferencePage() {
                   </button>
                 ))}
             </div>
+            {fieldErrors.roles && (
+              <p className="text-xs text-red-500 mt-2 font-medium">{fieldErrors.roles}</p>
+            )}
           </div>
 
           {/* Preferred Location & Work Arrangement */}
@@ -519,37 +741,19 @@ export default function JobReferencePage() {
                 <label className="text-xs font-medium text-gray-500 mb-1.5 block">
                   Province
                 </label>
-                <div className="relative">
-                  <select
-                    value={selectedProvinceId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      const found = provinces.find((p) => p.id === id);
-                      setSelectedProvinceId(id);
-                      setProvince(found?.name ?? "");
-                      if (id) {
-                        setIsLoadingCities(true);
-                        setCities([]);
-                        setCity("");
-                      }
-                    }}
-                    disabled={isLoadingProvinces}
-                    className="w-full h-11 px-3.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none appearance-none cursor-pointer focus:border-[#2B7FE0] focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {isLoadingProvinces ? (
-                      <option value="">Loading provinces...</option>
-                    ) : (
-                      provinces.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                    {isLoadingProvinces ? <SpinnerIcon /> : <ChevronDownIcon />}
-                  </span>
-                </div>
+                <SearchableDropdown
+                  value={selectedProvinceId}
+                  options={provinceOptions}
+                  placeholder="Select province"
+                  searchPlaceholder="Search province"
+                  loadingMessage="Loading provinces..."
+                  emptyMessage="No provinces found"
+                  isLoading={isLoadingProvinces}
+                  onChange={handleProvinceChange}
+                />
+                {fieldErrors.province && (
+                  <p className="text-xs text-red-500 mt-1.5 font-medium">{fieldErrors.province}</p>
+                )}
               </div>
 
               {/* City */}
@@ -557,27 +761,22 @@ export default function JobReferencePage() {
                 <label className="text-xs font-medium text-gray-500 mb-1.5 block">
                   City / Regency
                 </label>
-                <div className="relative">
-                  <select
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    disabled={isLoadingCities || cities.length === 0}
-                    className="w-full h-11 px-3.5 pr-10 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none appearance-none cursor-pointer focus:border-[#2B7FE0] focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {isLoadingCities ? (
-                      <option value="">Loading cities...</option>
-                    ) : (
-                      cities.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                    {isLoadingCities ? <SpinnerIcon /> : <ChevronDownIcon />}
-                  </span>
-                </div>
+                <SearchableDropdown
+                  value={city}
+                  options={cityOptions}
+                  placeholder={
+                    selectedProvinceId ? "Select city / regency" : "Select province first"
+                  }
+                  searchPlaceholder="Search city / regency"
+                  loadingMessage="Loading cities..."
+                  emptyMessage="No cities found"
+                  isLoading={isLoadingCities}
+                  disabled={!selectedProvinceId || cityOptions.length === 0}
+                  onChange={handleCityChange}
+                />
+                {fieldErrors.city && (
+                  <p className="text-xs text-red-500 mt-1.5 font-medium">{fieldErrors.city}</p>
+                )}
               </div>
             </div>
 
@@ -607,6 +806,9 @@ export default function JobReferencePage() {
                   );
                 })}
               </div>
+              {fieldErrors.arrangements && (
+                <p className="text-xs text-red-500 mt-2 font-medium">{fieldErrors.arrangements}</p>
+              )}
             </div>
           </div>
         </div>

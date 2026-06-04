@@ -104,7 +104,7 @@ function timeAgo(dateStr: string): string {
 }
 
 /* ─── Types ─── */
-export interface JobCardProps {
+interface JobCardProps {
   id: string;
   title: string;
   company: {
@@ -130,7 +130,6 @@ export interface JobCardProps {
 export default function JobCard({
   job,
   defaultBookmarked = false,
-  bookmarkId: initialBookmarkId,
   onBookmarkChange,
 }: {
   job: JobCardProps;
