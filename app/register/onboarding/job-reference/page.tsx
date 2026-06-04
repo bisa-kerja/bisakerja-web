@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { updatePreferences, PreferencesUpsertRequest } from "@/lib/api";
+import { SUGGESTED_TARGET_ROLES, TARGET_ROLE_OPTIONS } from "@/lib/jobRoles";
 
 /* ─── Icons ─── */
 function GraduationCapIcon() {
@@ -323,8 +324,6 @@ const jobStatuses = [
   "Just Looking",
 ];
 
-const suggestedRoles = ["Product Manager", "Visual Designer", "Software Engineer", "Data Analyst", "Marketing Specialist", "Project Manager"];
-
 const workArrangements = ["Hybrid", "Remote", "On-site"];
 
 export default function JobReferencePage() {
@@ -332,6 +331,7 @@ export default function JobReferencePage() {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [targetRoles, setTargetRoles] = useState<string[]>([]);
   const [roleSearch, setRoleSearch] = useState("");
+  const [isRoleAutocompleteOpen, setIsRoleAutocompleteOpen] = useState(false);
   const [province, setProvince] = useState("");
   const [city, setCity] = useState("");
   const [selectedProvinceId, setSelectedProvinceId] = useState("");
@@ -348,6 +348,7 @@ export default function JobReferencePage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const router = useRouter();
+  const roleAutocompleteRef = useRef<HTMLDivElement>(null);
 
   // Fetch all Indonesian provinces from the official wilayah API on mount
   useEffect(() => {
@@ -379,6 +380,22 @@ export default function JobReferencePage() {
       .finally(() => setIsLoadingCities(false));
   }, [selectedProvinceId]);
 
+  useEffect(() => {
+    if (!isRoleAutocompleteOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (
+        roleAutocompleteRef.current &&
+        !roleAutocompleteRef.current.contains(event.target as Node)
+      ) {
+        setIsRoleAutocompleteOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isRoleAutocompleteOpen]);
+
   const provinceOptions = useMemo(
     () => provinces.map((item) => ({ label: item.name, value: item.id })),
     [provinces],
@@ -388,6 +405,20 @@ export default function JobReferencePage() {
     () => cities.map((item) => ({ label: item.name, value: item.name })),
     [cities],
   );
+
+  const filteredRoleOptions = useMemo(() => {
+    const normalizedSearch = roleSearch.trim().toLowerCase();
+    const selectedRoleSet = new Set(targetRoles.map((role) => role.toLowerCase()));
+    const unselectedRoles = TARGET_ROLE_OPTIONS.filter(
+      (role) => !selectedRoleSet.has(role.toLowerCase()),
+    );
+
+    if (!normalizedSearch) return unselectedRoles.slice(0, 8);
+
+    return unselectedRoles
+      .filter((role) => role.toLowerCase().includes(normalizedSearch))
+      .slice(0, 8);
+  }, [roleSearch, targetRoles]);
 
   const handleProvinceChange = (id: string) => {
     const found = provinces.find((p) => p.id === id);
@@ -448,8 +479,15 @@ export default function JobReferencePage() {
   };
 
   const addRole = (role: string) => {
-    if (!targetRoles.includes(role)) {
-      setTargetRoles([...targetRoles, role]);
+    const normalizedRole = role.trim();
+    if (!normalizedRole) return;
+
+    const roleExists = targetRoles.some(
+      (targetRole) => targetRole.toLowerCase() === normalizedRole.toLowerCase(),
+    );
+
+    if (!roleExists) {
+      setTargetRoles([...targetRoles, normalizedRole]);
       setFieldErrors((e) => { const copy = { ...e }; delete copy.roles; return copy; });
     }
   };
@@ -457,8 +495,13 @@ export default function JobReferencePage() {
   const handleRoleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && roleSearch.trim()) {
       e.preventDefault();
-      addRole(roleSearch.trim());
+      addRole(filteredRoleOptions[0] ?? roleSearch.trim());
       setRoleSearch("");
+      setIsRoleAutocompleteOpen(false);
+    }
+
+    if (e.key === "Escape") {
+      setIsRoleAutocompleteOpen(false);
     }
   };
 
@@ -671,7 +714,7 @@ export default function JobReferencePage() {
             </h3>
 
             {/* Search Input */}
-            <div className="relative flex items-center mb-3">
+            <div ref={roleAutocompleteRef} className="relative mb-3">
               <span className="absolute left-3.5 text-gray-400">
                 <SearchIcon />
               </span>
@@ -680,9 +723,39 @@ export default function JobReferencePage() {
                 placeholder="Search roles (e.g., Product Designer, Data Analyst)"
                 className="w-full h-11 pl-10 pr-4 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none placeholder:text-gray-400 focus:border-[#2B7FE0] focus:ring-[3px] focus:ring-[#2B7FE0]/[0.08] transition-all duration-200"
                 value={roleSearch}
-                onChange={(e) => setRoleSearch(e.target.value)}
+                onChange={(e) => {
+                  setRoleSearch(e.target.value);
+                  setIsRoleAutocompleteOpen(true);
+                }}
+                onFocus={() => setIsRoleAutocompleteOpen(true)}
                 onKeyDown={handleRoleKeyDown}
               />
+              {isRoleAutocompleteOpen && (
+                <div className="absolute left-0 top-full z-20 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <div className="max-h-56 overflow-y-auto py-1">
+                    {filteredRoleOptions.length > 0 ? (
+                      filteredRoleOptions.map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() => {
+                            addRole(role);
+                            setRoleSearch("");
+                            setIsRoleAutocompleteOpen(false);
+                          }}
+                          className="w-full border-none bg-transparent px-3.5 py-2.5 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-[#2B7FE0]"
+                        >
+                          {role}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-3.5 py-2.5 text-sm text-gray-400">
+                        Press Enter to add &quot;{roleSearch.trim()}&quot;
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Selected Tags */}
@@ -710,7 +783,7 @@ export default function JobReferencePage() {
               Suggested for you
             </p>
             <div className="flex flex-wrap gap-2">
-              {suggestedRoles
+              {SUGGESTED_TARGET_ROLES
                 .filter((r) => !targetRoles.includes(r))
                 .map((role) => (
                   <button

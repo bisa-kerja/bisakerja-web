@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from "next/image";
@@ -16,6 +16,7 @@ import {
   uploadCVFile,
   type ActiveCVFile,
 } from "@/lib/api";
+import { SUGGESTED_TARGET_ROLES, TARGET_ROLE_OPTIONS } from "@/lib/jobRoles";
 
 /* ─── Icon Components ─── */
 
@@ -169,8 +170,6 @@ function LoadingOverlay({ currentStep }: { currentStep: number }) {
 }
 
 /* ─── Data ─── */
-const suggestedRoles = ["Software Engineer", "Product Manager", "Data Analyst", "UI/UX Designer"];
-
 function formatCVFileSize(sizeBytes: number) {
   if (sizeBytes < 1024 * 1024) {
     return `${(sizeBytes / 1024).toFixed(0)} KB`;
@@ -308,10 +307,12 @@ export default function AICVAnalyzer() {
   const [isDragging, setIsDragging] = useState(false);
   const [targetRoles, setTargetRoles] = useState<string[]>([]);
   const [roleSearch, setRoleSearch] = useState("");
+  const [isRoleAutocompleteOpen, setIsRoleAutocompleteOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const roleAutocompleteRef = useRef<HTMLDivElement>(null);
 
   /* ─── Analysis Loading Simulation ─── */
   useEffect(() => {
@@ -341,6 +342,36 @@ export default function AICVAnalyzer() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isRoleAutocompleteOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (
+        roleAutocompleteRef.current &&
+        !roleAutocompleteRef.current.contains(event.target as Node)
+      ) {
+        setIsRoleAutocompleteOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isRoleAutocompleteOpen]);
+
+  const filteredRoleOptions = useMemo(() => {
+    const normalizedSearch = roleSearch.trim().toLowerCase();
+    const selectedRoleSet = new Set(targetRoles.map((role) => role.toLowerCase()));
+    const unselectedRoles = TARGET_ROLE_OPTIONS.filter(
+      (role) => !selectedRoleSet.has(role.toLowerCase()),
+    );
+
+    if (!normalizedSearch) return unselectedRoles.slice(0, 8);
+
+    return unselectedRoles
+      .filter((role) => role.toLowerCase().includes(normalizedSearch))
+      .slice(0, 8);
+  }, [roleSearch, targetRoles]);
 
   const handleAnalyze = useCallback(async () => {
     if ((!uploadedFile && !selectedActiveCVFileId) || targetRoles.length === 0 || isAnalyzing) return;
@@ -485,16 +516,28 @@ export default function AICVAnalyzer() {
   };
 
   const addRole = (role: string) => {
-    if (!targetRoles.includes(role)) {
-      setTargetRoles([...targetRoles, role]);
+    const normalizedRole = role.trim();
+    if (!normalizedRole) return;
+
+    const roleExists = targetRoles.some(
+      (targetRole) => targetRole.toLowerCase() === normalizedRole.toLowerCase(),
+    );
+
+    if (!roleExists) {
+      setTargetRoles([...targetRoles, normalizedRole]);
     }
   };
 
   const handleRoleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && roleSearch.trim()) {
       e.preventDefault();
-      addRole(roleSearch.trim());
+      addRole(filteredRoleOptions[0] ?? roleSearch.trim());
       setRoleSearch("");
+      setIsRoleAutocompleteOpen(false);
+    }
+
+    if (e.key === "Escape") {
+      setIsRoleAutocompleteOpen(false);
     }
   };
 
@@ -643,7 +686,7 @@ export default function AICVAnalyzer() {
             </label>
 
             {/* Search Input */}
-            <div className="relative flex items-center mb-3">
+            <div ref={roleAutocompleteRef} className="relative mb-3">
               <span className="absolute left-3.5 text-gray-400">
                 <SearchIcon />
               </span>
@@ -652,9 +695,39 @@ export default function AICVAnalyzer() {
                 placeholder="Search roles (e.g., Product Designer, Data Analyst)"
                 className="w-full h-11 pl-10 pr-4 border border-gray-200 rounded-lg text-[13px] text-gray-900 bg-white outline-none placeholder:text-gray-400 focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/10 transition-all duration-200"
                 value={roleSearch}
-                onChange={(e) => setRoleSearch(e.target.value)}
+                onChange={(e) => {
+                  setRoleSearch(e.target.value);
+                  setIsRoleAutocompleteOpen(true);
+                }}
+                onFocus={() => setIsRoleAutocompleteOpen(true)}
                 onKeyDown={handleRoleKeyDown}
               />
+              {isRoleAutocompleteOpen && (
+                <div className="absolute left-0 top-full z-20 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <div className="max-h-56 overflow-y-auto py-1">
+                    {filteredRoleOptions.length > 0 ? (
+                      filteredRoleOptions.map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() => {
+                            addRole(role);
+                            setRoleSearch("");
+                            setIsRoleAutocompleteOpen(false);
+                          }}
+                          className="w-full border-none bg-transparent px-3.5 py-2.5 text-left text-[13px] font-medium text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                        >
+                          {role}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-3.5 py-2.5 text-[13px] text-gray-400">
+                        Press Enter to add &quot;{roleSearch.trim()}&quot;
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Selected Tags */}
@@ -682,7 +755,7 @@ export default function AICVAnalyzer() {
               Suggested for you
             </p>
             <div className="flex flex-wrap gap-2">
-              {suggestedRoles
+              {SUGGESTED_TARGET_ROLES
                 .filter((r) => !targetRoles.includes(r))
                 .map((role) => (
                   <button

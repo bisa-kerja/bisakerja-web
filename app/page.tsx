@@ -141,7 +141,7 @@ export default function Home() {
         >
           <ContainerScroll
             titleComponent={
-              <div className="mx-auto max-w-4xl px-6 pt-10 md:px-8">
+              <div className="mx-auto max-w-4xl px-6 lg:pt-10 pt-54 md:px-8">
                 <h1 className="text-5xl font-bold leading-tight text-gray-950 sm:text-5xl lg:text-[4rem]">
                   Let AI Find The Jobs That{" "}
                   <span className="relative inline-block whitespace-nowrap">
