@@ -623,17 +623,35 @@ function findStringByKeys(
   return null;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function toPreviewHtml(content: string): string {
+  if (/<\/?[a-z][\s\S]*>/i.test(content)) return content;
+
+  return `<!doctype html><html><body><pre style="white-space:pre-wrap;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;padding:32px;margin:0;color:#0f172a;">${escapeHtml(content)}</pre></body></html>`;
+}
+
 function extractGeneratedCVPreview(
   responseData: unknown,
   fallbackFileName: string,
 ): GeneratedCVPreview {
-  const htmlKeys = [
+  const previewContentKeys = [
     "html",
     "templateHtml",
     "previewHtml",
     "generatedHtml",
     "htmlContent",
     "cvHtml",
+    "markdown",
+    "generatedMarkdown",
+    "cvMarkdown",
     "content",
   ];
   const urlKeys = [
@@ -647,12 +665,13 @@ function extractGeneratedCVPreview(
   const fileNameKeys = ["fileName", "filename", "downloadFileName", "name"];
 
   const stringData = typeof responseData === "string" ? responseData : null;
-  const previewHtml =
-    stringData && stringData.includes("<")
+  const previewContent =
+    stringData && !/^(https?:|blob:|data:|\/)/.test(stringData)
       ? stringData
-      : findStringByKeys(responseData, htmlKeys, (candidate) =>
-          candidate.includes("<"),
+      : findStringByKeys(responseData, previewContentKeys, (candidate) =>
+          candidate.trim().length > 0,
         );
+  const previewHtml = previewContent ? toPreviewHtml(previewContent) : null;
   const downloadUrl =
     stringData && /^(https?:|blob:|data:|\/)/.test(stringData)
       ? stringData
