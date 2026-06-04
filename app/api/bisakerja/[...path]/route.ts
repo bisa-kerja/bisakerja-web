@@ -11,7 +11,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 
-const BACKEND_ORIGIN = "http://localhost:3000/api/v1";
+const BACKEND_ORIGIN = "https://bisakerja-api.salmanabdurrahman.my.id/api/v1";
 
 /** Headers we copy from the incoming browser request to the backend. */
 const FORWARD_REQUEST_HEADERS = [
