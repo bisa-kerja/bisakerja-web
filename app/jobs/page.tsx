@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import JobCard from "@/components/JobCard";
@@ -32,12 +32,47 @@ function ChevronDownIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-function SpinnerIcon() {
+function Skeleton({ className }: { className: string }) {
+  return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
+}
+
+function JobCardSkeleton() {
   return (
-    <svg className="animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="10" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" opacity="0.25" />
-      <path d="M12 2a10 10 0 0 1 10 10" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" />
-    </svg>
+    <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <Skeleton className="w-11 h-11 rounded-[10px] shrink-0" />
+          <div className="space-y-2 min-w-0 flex-1">
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-3 w-3/5" />
+          </div>
+        </div>
+        <Skeleton className="w-7 h-7 rounded-md shrink-0" />
+      </div>
+
+      <Skeleton className="h-4 w-28" />
+
+      <div className="space-y-2">
+        <Skeleton className="h-3.5 w-full" />
+        <Skeleton className="h-3.5 w-5/6" />
+        <Skeleton className="h-3.5 w-2/3" />
+      </div>
+
+      <div className="flex items-center justify-between pt-2 mt-auto">
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-3 w-20" />
+      </div>
+    </div>
+  );
+}
+
+function JobCardSkeletonGrid({ count = 8 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+      {Array.from({ length: count }, (_, index) => (
+        <JobCardSkeleton key={index} />
+      ))}
+    </div>
   );
 }
 
@@ -87,28 +122,41 @@ export default function Home() {
   const [jobs, setJobs] = useState<APIJob[]>([]);
   const [pagination, setPagination] = useState<APIPagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bookmarkByJobId, setBookmarkByJobId] = useState<Record<string, string>>(
     {},
   );
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const requestIdRef = useRef(0);
 
   // Search & filter state
   const [keyword, setKeyword] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [sort, setSort] = useState("newest");
-  const [page, setPage] = useState(1);
+  const [nextPage, setNextPage] = useState(1);
 
   // Dropdown states
   const [openFilter, setOpenFilter] = useState<string | null>(null);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  const loadJobs = useCallback(async () => {
-    setIsLoading(true);
+  const loadJobs = useCallback(async (pageToLoad = 1) => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    const isFirstPage = pageToLoad === 1;
+
+    if (isFirstPage) {
+      setIsLoading(true);
+      setIsLoadingMore(false);
+    } else {
+      setIsLoadingMore(true);
+    }
+
     setError(null);
     try {
       const params: JobSearchParams = {
-        page,
+        page: pageToLoad,
         limit: 20,
         sort,
       };
@@ -122,14 +170,26 @@ export default function Home() {
       });
 
       const res = await fetchJobs(params);
-      setJobs(res.data);
+      if (requestId !== requestIdRef.current) return;
+
+      setJobs((currentJobs) => (
+        isFirstPage ? res.data : [...currentJobs, ...res.data]
+      ));
       setPagination(res.meta.pagination);
+      setNextPage(res.meta.pagination.hasNextPage ? pageToLoad + 1 : pageToLoad);
     } catch {
+      if (requestId !== requestIdRef.current) return;
       setError("Failed to load jobs. Please try again.");
     } finally {
-      setIsLoading(false);
+      if (requestId !== requestIdRef.current) return;
+
+      if (isFirstPage) {
+        setIsLoading(false);
+      } else {
+        setIsLoadingMore(false);
+      }
     }
-  }, [page, keyword, filters, sort]);
+  }, [keyword, filters, sort]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -196,20 +256,41 @@ export default function Home() {
 
   const handleSearch = () => {
     setKeyword(searchInput);
-    setPage(1);
   };
 
   const handleFilterChange = (paramKey: string, value: string) => {
     setFilters((prev) => ({ ...prev, [paramKey]: value }));
-    setPage(1);
     setOpenFilter(null);
   };
 
   const handleSortChange = (value: string) => {
     setSort(value);
-    setPage(1);
     setShowSortDropdown(false);
   };
+
+  const handleLoadMore = useCallback(() => {
+    if (isLoading || isLoadingMore || !pagination?.hasNextPage) return;
+
+    loadJobs(nextPage);
+  }, [isLoading, isLoadingMore, loadJobs, nextPage, pagination?.hasNextPage]);
+
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel || !pagination?.hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          handleLoadMore();
+        }
+      },
+      { rootMargin: "320px 0px" },
+    );
+
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [handleLoadMore, pagination?.hasNextPage]);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
@@ -310,7 +391,7 @@ export default function Home() {
               ))}
               {activeFilterCount > 0 && (
                 <button
-                  onClick={() => { setFilters({}); setPage(1); }}
+                  onClick={() => setFilters({})}
                   className="px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 text-[13px] font-medium cursor-pointer hover:bg-red-100 transition-colors"
                 >
                   Reset ({activeFilterCount})
@@ -365,10 +446,7 @@ export default function Home() {
       {/* ─── Job Cards Grid ─── */}
       <section className="max-w-[1240px] mx-auto px-6 pt-7 pb-12 w-full">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <SpinnerIcon />
-            <p className="text-sm text-gray-500">Loading jobs...</p>
-          </div>
+          <JobCardSkeletonGrid />
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
@@ -380,7 +458,7 @@ export default function Home() {
             </div>
             <p className="text-sm text-gray-600">{error}</p>
             <button
-              onClick={loadJobs}
+              onClick={() => loadJobs(1)}
               className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium border-none cursor-pointer hover:bg-blue-700 transition-colors"
             >
               Try Again
@@ -410,65 +488,24 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-10 flex-wrap">
-                <button
-                  disabled={!pagination.hasPrevPage}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-2.5 sm:px-4 py-2 rounded-lg border border-gray-200 bg-white text-xs sm:text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                >
-                  <span className="hidden sm:inline">← Previous</span>
-                  <span className="sm:hidden">←</span>
-                </button>
-                <div className="flex items-center gap-1">
-                  {/* Show page numbers */}
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    let pageNum: number;
-                    if (pagination.totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (page <= 3) {
-                      pageNum = i + 1;
-                    } else if (page >= pagination.totalPages - 2) {
-                      pageNum = pagination.totalPages - 4 + i;
-                    } else {
-                      pageNum = page - 2 + i;
-                    }
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`w-9 h-9 rounded-lg border text-sm font-medium cursor-pointer transition-colors ${
-                          page === pageNum
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  {pagination.totalPages > 5 && page < pagination.totalPages - 2 && (
-                    <>
-                      <span className="text-gray-400 px-1">...</span>
-                      <button
-                        onClick={() => setPage(pagination.totalPages)}
-                        className="w-9 h-9 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 font-medium cursor-pointer hover:bg-gray-50 transition-colors"
-                      >
-                        {pagination.totalPages}
-                      </button>
-                    </>
-                  )}
-                </div>
-                <button
-                  disabled={!pagination.hasNextPage}
-                  onClick={() => setPage((p) => p + 1)}
-                  className="px-2.5 sm:px-4 py-2 rounded-lg border border-gray-200 bg-white text-xs sm:text-sm text-gray-700 font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-                >
-                  <span className="hidden sm:inline">Next →</span>
-                  <span className="sm:hidden">→</span>
-                </button>
+            {isLoadingMore && (
+              <div className="mt-4">
+                <JobCardSkeletonGrid count={4} />
               </div>
+            )}
+
+            {pagination?.hasNextPage && (
+              <div
+                ref={loadMoreRef}
+                aria-hidden="true"
+                className="h-10"
+              />
+            )}
+
+            {!pagination?.hasNextPage && jobs.length > 0 && (
+              <p className="mt-10 text-center text-sm text-gray-500">
+                You&apos;ve reached the end of the list.
+              </p>
             )}
           </>
         )}
